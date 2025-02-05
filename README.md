@@ -1,6 +1,11 @@
 # Răsfățul Pescarului
 
-Un magazin online pentru pescari, cu locații de pescuit și tutoriale video.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Django](https://img.shields.io/badge/Django-5.1.5-green.svg)](https://www.djangoproject.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple.svg)](https://getbootstrap.com/)
+
+Un magazin online pentru pescari, cu locații de pescuit și tutoriale video. Proiectul este dezvoltat folosind Django și oferă o experiență completă de cumpărături online, cu sistem de autentificare securizat, procesare plăți și gestionare comenzi.
 
 ## Funcționalități
 
@@ -42,7 +47,7 @@ Un magazin online pentru pescari, cu locații de pescuit și tutoriale video.
 
 1. Clonați repository-ul:
 ```bash
-git clone [repository-url]
+git clone https://github.com/GaitanS/Rasfatul-Pescarului.git
 cd RasfatulPescarului
 ```
 
@@ -59,27 +64,39 @@ pip install -r requirements.txt
 ```
 
 4. Creați fișierul .env și configurați variabilele de mediu:
-```
+```env
+# Django settings
 SECRET_KEY=your-secret-key
 DEBUG=True
-SITE_URL=http://localhost:8000
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Email
+# Email settings
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=your-name <your-email@gmail.com>
 
-# Stripe
+# Email verification
+EMAIL_VERIFICATION_TIMEOUT_DAYS=1
+EMAIL_VERIFICATION_URL=http://localhost:8000/verify-email/
+
+# reCAPTCHA settings
+RECAPTCHA_PUBLIC_KEY=your-recaptcha-public-key
+RECAPTCHA_PRIVATE_KEY=your-recaptcha-private-key
+RECAPTCHA_REQUIRED_SCORE=0.85
+
+# Stripe settings
 STRIPE_PUBLIC_KEY=your-stripe-public-key
 STRIPE_SECRET_KEY=your-stripe-secret-key
 STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
-
-# reCAPTCHA
-RECAPTCHA_PUBLIC_KEY=your-recaptcha-public-key
-RECAPTCHA_PRIVATE_KEY=your-recaptcha-private-key
 ```
+
+Pentru a obține cheile necesare:
+- [Creați un cont Gmail și generați o parolă pentru aplicație](https://support.google.com/accounts/answer/185833?hl=ro)
+- [Obțineți chei reCAPTCHA](https://www.google.com/recaptcha/admin)
+- [Creați un cont Stripe și obțineți cheile API](https://stripe.com/docs/keys)
 
 5. Aplicați migrările:
 ```bash
@@ -140,11 +157,25 @@ RasfatulPescarului/
 
 ## Contribuție
 
-1. Fork repository
+1. Fork repository-ul
 2. Creați un branch nou (`git checkout -b feature/AmazingFeature`)
-3. Commit modificările (`git commit -m 'Add some AmazingFeature'`)
-4. Push la branch (`git push origin feature/AmazingFeature`)
-5. Deschideți un Pull Request
+3. Faceți modificările dorite
+4. Rulați testele și asigurați-vă că totul funcționează
+5. Commit modificările (`git commit -m 'Add some AmazingFeature'`)
+6. Push la branch (`git push origin feature/AmazingFeature`)
+7. Deschideți un Pull Request
+
+### Ghid de contribuție
+
+1. Asigurați-vă că codul respectă standardele PEP 8
+2. Adăugați comentarii și docstrings pentru cod nou
+3. Actualizați documentația dacă este necesar
+4. Adăugați teste pentru funcționalități noi
+5. Verificați că toate testele existente trec
+
+## Securitate
+
+Dacă descoperiți o vulnerabilitate de securitate, vă rugăm să trimiteți un email la security@rasfatulpescarului.ro în loc să deschideți un issue public.
 
 ## Licență
 
