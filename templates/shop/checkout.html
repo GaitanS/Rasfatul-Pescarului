@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load main_extras %}
+
+{% block title %}Finalizare comandă - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Acasă</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:cart' %}">Coș de cumpărături</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Finalizare comandă</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Checkout Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Detalii comandă</h3>
+
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" id="checkout-form" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <h5 class="mb-3">Informații personale</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">Prenume</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name }}" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci prenumele.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Nume</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name }}" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci numele.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci o adresă de email validă.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       pattern="[0-9]{10}" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci un număr de telefon valid (10 cifre).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Address -->
+                        <h5 class="mb-3">Adresă livrare</h5>
+                        <div class="row mb-4">
+                            <div class="col-12 mb-3">
+                                <label for="address" class="form-label">Adresă</label>
+                                <input type="text" class="form-control" id="address" name="address" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci adresa de livrare.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">Oraș</label>
+                                <input type="text" class="form-control" id="city" name="city" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci orașul.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="county" class="form-label">Județ</label>
+                                <select class="form-select" id="county" name="county" required>
+                                    <option value="">Alege județul...</option>
+                                    {% for county in counties %}
+                                    <option value="{{ county.id }}">{{ county.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Te rugăm să selectezi județul.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="postal_code" class="form-label">Cod poștal</label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code" 
+                                       pattern="[0-9]{6}" required>
+                                <div class="invalid-feedback">
+                                    Te rugăm să introduci un cod poștal valid (6 cifre).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="mb-4">
+                            <label for="comments" class="form-label">Comentarii comandă (opțional)</label>
+                            <textarea class="form-control" id="comments" name="comments" rows="3"></textarea>
+                        </div>
+
+                        <!-- Terms -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    Am citit și sunt de acord cu <a href="{% url 'main:terms' %}" target="_blank">Termenii și Condițiile</a>
+                                </label>
+                                <div class="invalid-feedback">
+                                    Trebuie să accepți termenii și condițiile pentru a continua.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-button">
+                            <i class="fas fa-lock me-2"></i>Continuă către plată
+                        </button>
+
+                        <div class="text-center mt-4">
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-lock me-1"></i> Plată securizată prin
+                                <img src="https://stripe.com/img/v3/home/twitter.svg" alt="Stripe" height="20" class="ms-1">
+                            </p>
+                            <p class="text-muted small mb-0">
+                                Acceptăm Visa, Mastercard și alte carduri principale
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Sumar comandă</h3>
+                    
+                    <!-- Products -->
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">{{ item.quantity }} x {{ item.product.price }} Lei</small>
+                        </div>
+                        <span>{{ item.total_price }} Lei</span>
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <!-- Totals -->
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>{{ cart_total }} Lei</span>
+                    </div>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span>Transport:</span>
+                        <span>{% if cart_total >= 200 %}Gratuit{% else %}20 Lei{% endif %}</span>
+                    </div>
+                    <div class="mb-4 d-flex justify-content-between fw-bold">
+                        <span>Total:</span>
+                        <span>{{ total_with_shipping }} Lei</span>
+                    </div>
+
+                    <!-- Free Shipping Notice -->
+                    {% if cart_total < 200 %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-truck me-2"></i>
+                        Mai adaugă produse de {{ 200|sub:cart_total|floatformat:2 }} Lei pentru transport gratuit!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+
+    // Phone number validation
+    document.getElementById('phone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 10) {
+            value = value.slice(0, 10);
+        }
+        e.target.value = value;
+    });
+
+    // Postal code validation
+    document.getElementById('postal_code').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 6) {
+            value = value.slice(0, 6);
+        }
+        e.target.value = value;
+    });
+</script>
+{% endblock %}

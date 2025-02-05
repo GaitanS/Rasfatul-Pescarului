@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #198754;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .review-section {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ logo_url }}" alt="Răsfățul Pescarului" class="logo">
+        <h1>Comanda ta a fost livrată!</h1>
+    </div>
+
+    <div class="content">
+        <p>Dragă {{ order.user.get_full_name }},</p>
+
+        <div class="success-message">
+            <h2>🎉 Livrare cu succes!</h2>
+            <p>Comanda ta #{{ order.id }} a fost livrată cu succes.</p>
+        </div>
+
+        <h3>Produse livrate:</h3>
+        <ul>
+            {% for item in order.items.all %}
+            <li>{{ item.product.name }} x {{ item.quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="review-section">
+            <h3>Cum a fost experiența ta?</h3>
+            <p>Ne-ar plăcea să aflăm părerea ta despre produsele comandate. Feedback-ul tău ne ajută să ne îmbunătățim serviciile.</p>
+            <a href="{{ review_url }}" class="button">Lasă o recenzie</a>
+        </div>
+
+        <p>Dacă ai întâmpina probleme cu produsele primite, te rugăm să ne contactezi în termen de 14 zile pentru a beneficia de garanția de returnare.</p>
+
+        <div style="text-align: center;">
+            <a href="{{ order_url }}" class="button">Vezi detalii comandă</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Mulțumim că ai ales Răsfățul Pescarului! Sperăm că produsele noastre îți vor aduce multe capturi reușite.</p>
+        <p>Pentru orice întrebări sau asistență, contactează-ne la <a href="mailto:contact@rasfatulpescarului.ro">contact@rasfatulpescarului.ro</a> sau la numărul de telefon <a href="tel:+40123456789">+40 123 456 789</a>.</p>
+        <p>© {{ current_year }} Răsfățul Pescarului. Toate drepturile rezervate.</p>
+    </div>
+</body>
+</html>

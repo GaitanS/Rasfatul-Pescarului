@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load main_extras %}
+
+{% block title %}{{ product.name }} - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Acasă</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:shop' %}">Magazin</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'main:shop' %}?category={{ product.category.slug }}">
+                    {{ product.category.name }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{% static 'images/product-placeholder.png' %}" class="card-img-top" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-md-6">
+            <div class="product-details">
+                <h1 class="mb-3">{{ product.name }}</h1>
+                
+                <!-- Price -->
+                <div class="mb-4">
+                    <h2 class="text-success mb-0">{{ product.price }} Lei</h2>
+                    {% if product.stock_quantity > 0 %}
+                    <span class="badge bg-success">În stoc</span>
+                    {% else %}
+                    <span class="badge bg-danger">Stoc epuizat</span>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h5>Descriere</h5>
+                    <p>{{ product.description }}</p>
+                </div>
+
+                <!-- Add to Cart Form -->
+                {% if product.stock_quantity > 0 %}
+                <div class="mb-4">
+                    <form method="post" action="{% url 'main:add_to_cart' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="quantity" class="col-form-label">Cantitate:</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="number" id="quantity" name="quantity" class="form-control" 
+                                       value="1" min="1" max="{{ product.stock_quantity }}">
+                            </div>
+                            <div class="col-auto">
+                                <span class="form-text text-muted">
+                                    ({{ product.stock_quantity }} disponibile)
+                                </span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg w-100 mt-3">
+                            <i class="fas fa-shopping-cart me-2"></i>Adaugă în coș
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Additional Info -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Informații suplimentare</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-box me-2"></i>
+                                Categorie: {{ product.category.name }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-truck me-2"></i>
+                                Livrare gratuită pentru comenzi peste 200 Lei
+                            </li>
+                            <li>
+                                <i class="fas fa-undo me-2"></i>
+                                Retur gratuit în 14 zile
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="related-products mt-5">
+        <h3 class="mb-4">Produse similare</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for related in related_products %}
+            <div class="col">
+                <div class="card h-100">
+                    {% if related.image %}
+                    <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.name }}">
+                    {% else %}
+                    <img src="{% static 'images/product-placeholder.png' %}" class="card-img-top" alt="{{ related.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ related.name }}</h5>
+                        <p class="card-text text-success fw-bold">{{ related.price }} Lei</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'main:product_detail' related.slug %}" class="btn btn-outline-success">
+                                Vezi detalii
+                            </a>
+                            {% if related.stock_quantity > 0 %}
+                            <form method="post" action="{% url 'main:add_to_cart' %}" class="d-grid">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ related.id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-shopping-cart me-2"></i>Adaugă în coș
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-shopping-cart me-2"></i>
+            <strong class="me-auto">Coș de cumpărături</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+{% endblock %}

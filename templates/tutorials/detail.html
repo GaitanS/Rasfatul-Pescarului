@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ video.title }} - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Acasă</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:tutorials' %}">Tutoriale</a></li>
+            {% if video.category %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'main:tutorials' %}?category={{ video.category.slug }}">
+                    {{ video.category.name }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ video.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Video Player -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe src="{{ video.embed_url }}" title="{{ video.title }}" allowfullscreen></iframe>
+                    </div>
+                    <h1 class="h2 mb-3">{{ video.title }}</h1>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>{{ video.created_at|date:"d.m.Y" }}
+                        {% if video.category %}
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-folder me-2"></i>{{ video.category.name }}
+                        {% endif %}
+                    </p>
+                    <hr>
+                    <div class="video-description">
+                        {{ video.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Videos -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Tutoriale similare</h5>
+                    {% if related_videos %}
+                    {% for related in related_videos %}
+                    <div class="mb-3">
+                        <a href="{% url 'main:video_detail' related.id %}" class="text-decoration-none">
+                            <div class="ratio ratio-16x9 mb-2">
+                                {% if related.thumbnail %}
+                                <img src="{{ related.thumbnail.url }}" alt="{{ related.title }}" class="img-fluid rounded">
+                                {% else %}
+                                <img src="{% static 'images/video-placeholder.png' %}" alt="{{ related.title }}" class="img-fluid rounded">
+                                {% endif %}
+                            </div>
+                            <h6 class="mb-1">{{ related.title }}</h6>
+                        </a>
+                        <small class="text-muted">{{ related.created_at|date:"d.m.Y" }}</small>
+                    </div>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">Nu există tutoriale similare.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

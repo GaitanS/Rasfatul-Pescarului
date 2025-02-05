@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmare mesaj - Răsfățul Pescarului</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #2C5530; margin-bottom: 20px;">Confirmare mesaj</h1>
+
+    <p>Bună {{ name }},</p>
+
+    <p>Vă mulțumim pentru mesajul trimis către Răsfățul Pescarului. Am primit solicitarea dumneavoastră și vom reveni cu un răspuns în cel mai scurt timp posibil.</p>
+
+    <p>Dacă aveți întrebări suplimentare, nu ezitați să ne contactați:</p>
+    <ul style="list-style: none; padding-left: 0;">
+        <li style="margin-bottom: 10px;">Telefon: {{ settings.COMPANY_PHONE }}</li>
+        <li style="margin-bottom: 10px;">Email: {{ settings.COMPANY_EMAIL }}</li>
+        <li>Adresă: {{ settings.COMPANY_ADDRESS }}</li>
+    </ul>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666;">
+        <p>Cu stimă,<br>Echipa Răsfățul Pescarului</p>
+    </div>
+</body>
+</html>

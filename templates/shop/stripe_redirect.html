@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Redirecționare către plată - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Redirecționare către plată</h3>
+                    
+                    <div id="loading">
+                        <div class="spinner-border text-primary mb-4" role="status">
+                            <span class="visually-hidden">Se încarcă...</span>
+                        </div>
+                        <p class="mb-0">Vă rugăm să așteptați, veți fi redirecționat către pagina de plată...</p>
+                    </div>
+
+                    <div id="error" class="d-none">
+                        <div class="text-danger mb-4">
+                            <i class="fas fa-exclamation-circle fa-3x"></i>
+                        </div>
+                        <h5 class="text-danger">Eroare la redirecționare</h5>
+                        <p class="text-danger mb-4" id="error-message"></p>
+                        <a href="{% url 'main:checkout' %}" class="btn btn-primary">
+                            <i class="fas fa-redo me-2"></i>Încearcă din nou
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Function to show error
+    function showError(message) {
+        document.getElementById('loading').classList.add('d-none');
+        document.getElementById('error').classList.remove('d-none');
+        document.getElementById('error-message').textContent = message || 'A apărut o eroare la inițializarea plății. Vă rugăm să încercați din nou.';
+        console.error('Stripe redirect error:', message);
+    }
+
+    // Initialize Stripe
+    const stripe = Stripe('{{ stripe_public_key }}');
+
+    // Start redirect immediately
+    stripe.redirectToCheckout({
+        sessionId: '{{ session_id }}'
+    }).then(function(result) {
+        if (result.error) {
+            showError(result.error.message);
+        }
+    }).catch(function(error) {
+        showError(error.message);
+    });
+
+    // Add timeout to show error if redirect takes too long
+    setTimeout(function() {
+        showError('Redirecționarea durează prea mult. Vă rugăm să încercați din nou.');
+    }, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instrucțiuni Transfer Bancar - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Instrucțiuni Transfer Bancar</h3>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Comanda dumneavoastră va fi procesată după confirmarea plății.
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Detalii Comandă</h5>
+                        <p class="mb-1"><strong>Număr comandă:</strong> #{{ order.id }}</p>
+                        <p class="mb-1"><strong>Total de plată:</strong> {{ order.total_amount }} Lei</p>
+                        <p class="mb-0"><strong>Referință plată:</strong> {{ order.bank_transfer_ref }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Detalii Bancare</h5>
+                        <p class="mb-1"><strong>Beneficiar:</strong> {{ settings.COMPANY_NAME }}</p>
+                        <p class="mb-1"><strong>Bancă:</strong> {{ settings.COMPANY_BANK_NAME }}</p>
+                        <p class="mb-1"><strong>Cont IBAN:</strong> {{ settings.COMPANY_BANK }}</p>
+                        <p class="mb-0"><strong>CUI:</strong> {{ settings.COMPANY_VAT }}</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">Important!</h5>
+                        <p class="mb-0">Vă rugăm să includeți referința plății ({{ order.bank_transfer_ref }}) în detaliile transferului pentru a putea identifica plata dumneavoastră.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'main:order_detail' order.id %}" class="btn btn-primary">
+                            <i class="fas fa-eye me-2"></i>Vezi detalii comandă
+                        </a>
+                        <a href="{% url 'main:orders' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-list me-2"></i>Comenzile mele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

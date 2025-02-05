@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Despre Noi - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-4">Despre Răsfățul Pescarului</h1>
+        <p class="lead text-muted">Pasiunea pentru pescuit transformată în experiențe memorabile</p>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6" data-aos="fade-right">
+            <div class="position-relative">
+                <img src="{% static 'images/hero.png' %}" alt="Misiunea noastră" class="img-fluid rounded shadow-lg">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-success opacity-10 rounded"></div>
+            </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left">
+            <h2 class="mb-4">Misiunea Noastră</h2>
+            <p class="lead text-success mb-4">Să oferim pescarilor din România acces la cele mai bune echipamente și locații de pescuit.</p>
+            <p>La Răsfățul Pescarului, ne-am propus să creăm o comunitate vibrantă de pescari pasionați, oferind:</p>
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Echipamente de pescuit de înaltă calitate
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Informații actualizate despre cele mai bune locuri de pescuit
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Tutoriale și sfaturi de la pescari experimentați
+                </li>
+                <li>
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Suport și consiliere pentru începători
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Values Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Valorile Noastre</h2>
+            <p class="text-muted">Principiile care ne ghidează în tot ceea ce facem</p>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-3">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h4 class="card-title">Pasiune</h4>
+                    <p class="card-text">Suntem pasionați de pescuit și ne dedicăm să împărtășim această pasiune cu întreaga comunitate.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-3">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h4 class="card-title">Integritate</h4>
+                    <p class="card-text">Oferim doar produse și informații de calitate, în care credem cu adevărat.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4 class="card-title">Comunitate</h4>
+                    <p class="card-text">Construim și susținem o comunitate unită de pescari pasionați din toată România.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Echipa Noastră</h2>
+            <p class="text-muted">Oamenii pasionați din spatele Răsfățului Pescarului</p>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up">
+            <div class="card border-0 shadow-sm">
+                <img src="{% static 'images/user-placeholder.png' %}" class="card-img-top" alt="Membru echipă">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ioan Popescu</h5>
+                    <p class="text-muted">Fondator & Director General</p>
+                    <p class="card-text">Pescar pasionat cu peste 20 de ani de experiență.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm">
+                <img src="{% static 'images/user-placeholder.png' %}" class="card-img-top" alt="Membru echipă">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Maria Ionescu</h5>
+                    <p class="text-muted">Manager Magazin</p>
+                    <p class="card-text">Expert în echipamente de pescuit și servicii clienți.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm">
+                <img src="{% static 'images/user-placeholder.png' %}" class="card-img-top" alt="Membru echipă">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Andrei Popa</h5>
+                    <p class="text-muted">Expert Tehnic</p>
+                    <p class="card-text">Specialist în tehnici moderne de pescuit și tutoriale.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="text-center py-5 bg-light rounded" data-aos="fade-up">
+        <h2 class="mb-4">Hai să stăm de vorbă!</h2>
+        <p class="lead mb-4">Suntem aici pentru a răspunde la toate întrebările tale despre pescuit.</p>
+        <a href="{% url 'main:contact' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-envelope me-2"></i>Contactează-ne
+        </a>
+    </div>
+</div>
+{% endblock %}

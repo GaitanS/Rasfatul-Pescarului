@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .lake-popup {
+        max-width: 300px;
+    }
+    .lake-popup img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    .lake-popup h5 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+    }
+    .lake-popup p {
+        margin: 5px 0;
+        color: #34495e;
+    }
+    .lake-popup .btn {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-3">Bălți de pescuit</h1>
+            <p class="lead">Descoperă cele mai bune locuri de pescuit din România</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <!-- Filters -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filtrează</h5>
+                    <form id="filterForm">
+                        <!-- County Filter -->
+                        <div class="mb-3">
+                            <label for="county" class="form-label">Județ</label>
+                            <select class="form-select" id="county" name="county">
+                                <option value="">Toate județele</option>
+                                {% for county in counties %}
+                                <option value="{{ county.id }}">{{ county.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Fish Types Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Specii de pești</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="crap" id="crapCheck">
+                                <label class="form-check-label" for="crapCheck">Crap</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="caras" id="carasCheck">
+                                <label class="form-check-label" for="carasCheck">Caras</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="stiuca" id="stiucaCheck">
+                                <label class="form-check-label" for="stiucaCheck">Știucă</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="salau" id="salauCheck">
+                                <label class="form-check-label" for="salauCheck">Șalău</label>
+                            </div>
+                        </div>
+
+                        <!-- Price Range Filter -->
+                        <div class="mb-3">
+                            <label for="priceRange" class="form-label">Preț maxim/zi: <span id="priceValue">100</span> Lei</label>
+                            <input type="range" class="form-range" id="priceRange" min="0" max="200" step="10" value="100">
+                        </div>
+
+                        <!-- Facilities Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Facilități</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="parcare" id="parkingCheck">
+                                <label class="form-check-label" for="parkingCheck">Parcare</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="cazare" id="accommodationCheck">
+                                <label class="form-check-label" for="accommodationCheck">Cazare</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="restaurant" id="restaurantCheck">
+                                <label class="form-check-label" for="restaurantCheck">Restaurant</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="toalete" id="toiletsCheck">
+                                <label class="form-check-label" for="toiletsCheck">Toalete</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Aplică filtre</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <!-- Map -->
+            <div id="map"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        var map = L.map('map').setView([45.9432, 24.9668], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add markers for each lake
+        {% for lake in lakes %}
+        var marker = L.marker([{{ lake.latitude }}, {{ lake.longitude }}]).addTo(map);
+        var popupContent = `
+            <div class="lake-popup">
+                {% if lake.image %}
+                <img src="{{ lake.image.url }}" alt="{{ lake.name }}">
+                {% endif %}
+                <h5>{{ lake.name }}</h5>
+                <p><i class="fas fa-map-marker-alt"></i> {{ lake.county.name }}</p>
+                <p><i class="fas fa-fish"></i> {{ lake.fish_types }}</p>
+                <p><i class="fas fa-coins"></i> {{ lake.price_per_day }} Lei/zi</p>
+                <a href="{% url 'main:lake_detail' lake.id %}" class="btn btn-success btn-sm">Vezi detalii</a>
+            </div>
+        `;
+        marker.bindPopup(popupContent);
+        {% endfor %}
+
+        // Price range display
+        var priceRange = document.getElementById('priceRange');
+        var priceValue = document.getElementById('priceValue');
+        priceRange.addEventListener('input', function() {
+            priceValue.textContent = this.value;
+        });
+
+        // Filter form submission
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add filter logic here
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ lake.name }} - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Acasă</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:locations_map' %}">Bălți de pescuit</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:county_lakes' lake.county.slug %}">{{ lake.county.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ lake.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Lake Image and Details -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                {% if lake.image %}
+                <img src="{{ lake.image.url }}" alt="{{ lake.name }}" class="card-img-top">
+                {% else %}
+                <img src="{% static 'images/lake-placeholder.jpg' %}" alt="{{ lake.name }}" class="card-img-top">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title h2 mb-3">{{ lake.name }}</h1>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ lake.location }}
+                    </p>
+                    <div class="lake-description mb-4">
+                        {{ lake.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Locație</h5>
+                    <div id="map" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nearby Lakes -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Bălți în apropiere</h5>
+                    {% if nearby_lakes %}
+                    {% for nearby in nearby_lakes %}
+                    <div class="mb-3">
+                        <a href="{% url 'main:lake_detail' nearby.id %}" class="text-decoration-none">
+                            <div class="ratio ratio-16x9 mb-2">
+                                {% if nearby.image %}
+                                <img src="{{ nearby.image.url }}" alt="{{ nearby.name }}" class="img-fluid rounded">
+                                {% else %}
+                                <img src="{% static 'images/lake-placeholder.jpg' %}" alt="{{ nearby.name }}" class="img-fluid rounded">
+                                {% endif %}
+                            </div>
+                            <h6 class="mb-1">{{ nearby.name }}</h6>
+                        </a>
+                        <small class="text-muted">{{ nearby.location }}</small>
+                    </div>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">Nu există bălți în apropiere.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const map = L.map('map').setView([{{ lake.latitude }}, {{ lake.longitude }}], 13);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add marker for lake location
+    L.marker([{{ lake.latitude }}, {{ lake.longitude }}])
+        .addTo(map)
+        .bindPopup('{{ lake.name }}')
+        .openPopup();
+});
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coș de cumpărături - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <h1 class="mb-4">Coș de cumpărături</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if cart_items %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    {% csrf_token %}
+                    {% for item in cart_items %}
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-md-2">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded">
+                            {% else %}
+                            <img src="{% static 'images/product-placeholder.png' %}" alt="{{ item.product.name }}" class="img-fluid rounded">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="mb-1">{{ item.product.name }}</h5>
+                            <p class="text-muted mb-0">{{ item.price|floatformat:2 }} Lei</p>
+                        </div>
+                        <div class="col-md-3">
+                            <form method="post" action="{% url 'main:update_cart' %}" class="d-flex align-items-center">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                <div class="input-group">
+                                    <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" 
+                                            class="btn btn-outline-secondary btn-sm" 
+                                            {% if item.quantity <= 1 %}disabled{% endif %}>
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" value="{{ item.quantity }}" 
+                                           class="form-control form-control-sm text-center" 
+                                           style="width: 60px;" readonly>
+                                    <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" 
+                                            class="btn btn-outline-secondary btn-sm"
+                                            {% if item.quantity >= item.product.stock_quantity %}disabled{% endif %}>
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <span class="fw-bold">{{ item.total|floatformat:2 }} Lei</span>
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <form method="post" action="{% url 'main:remove_from_cart' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Sumar comandă</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>{{ cart_total|floatformat:2 }} Lei</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Transport:</span>
+                        {% if shipping_cost > 0 %}
+                        <span>{{ shipping_cost|floatformat:2 }} Lei</span>
+                        {% else %}
+                        <span class="text-success">Gratuit</span>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold">Total:</span>
+                        <span class="fw-bold">{{ total_with_shipping|floatformat:2 }} Lei</span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'main:checkout' %}" class="btn btn-success">
+                            <i class="fas fa-lock me-2"></i>Finalizează comanda
+                        </a>
+                        <a href="{% url 'main:shop' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Continuă cumpărăturile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <h3>Coșul tău este gol</h3>
+        <p class="text-muted">Nu ai niciun produs în coș.</p>
+        <a href="{% url 'main:shop' %}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag me-2"></i>Vezi produsele
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Comandă Finalizată - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h2 class="card-title mt-4">Mulțumim pentru comandă!</h2>
+                    <p class="lead mb-4">Comanda dumneavoastră #{{ order.id }} a fost înregistrată cu succes.</p>
+
+                    <div class="alert alert-success mb-4">
+                        <i class="fas fa-check me-2"></i>
+                        Plata a fost procesată cu succes.
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="text-start mb-4">
+                        <h5>Detalii comandă:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Număr comandă:</strong> #{{ order.id }}</p>
+                                <p class="mb-1"><strong>Data:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                                <p class="mb-1"><strong>Status:</strong> {{ order.get_status_display }}</p>
+                                <p class="mb-1"><strong>Total:</strong> {{ order.total_amount }} Lei</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Nume:</strong> {{ order.full_name }}</p>
+                                <p class="mb-1"><strong>Email:</strong> {{ order.email }}</p>
+                                <p class="mb-1"><strong>Telefon:</strong> {{ order.phone }}</p>
+                                <p class="mb-1"><strong>Adresă:</strong> {{ order.address }}, {{ order.city }}, {{ order.county.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="text-start mb-4">
+                        <h5>Produse comandate:</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Produs</th>
+                                        <th class="text-center">Cantitate</th>
+                                        <th class="text-end">Preț unitar</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items.all %}
+                                    <tr>
+                                        <td>{{ item.product.name }}</td>
+                                        <td class="text-center">{{ item.quantity }}</td>
+                                        <td class="text-end">{{ item.unit_price }} Lei</td>
+                                        <td class="text-end">{{ item.total_price }} Lei</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if order.shipping_cost > 0 %}
+                                    <tr>
+                                        <td colspan="3" class="text-end">Transport:</td>
+                                        <td class="text-end">{{ order.shipping_cost }} Lei</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr class="fw-bold">
+                                        <td colspan="3" class="text-end">Total:</td>
+                                        <td class="text-end">{{ order.total_amount }} Lei</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Ce urmează?</h5>
+                        <p class="mb-0">Veți primi un email de confirmare cu detaliile comenzii. Vă vom ține la curent cu statusul comenzii dumneavoastră.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'main:orders' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Vezi toate comenzile
+                        </a>
+                        <a href="{% url 'main:shop' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-shopping-bag me-2"></i>Continuă cumpărăturile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% load static %}
+{% load i18n %}
+
+<footer class="footer_color text-white pt-5 pb-3">
+    <div class="container-fluid px-5">
+        <div class="row">
+            <!-- Company Info -->
+            <div class="col-lg-4 mb-4">
+                <div class="footer-brand mb-4">
+                    <img src="{% static 'images/logo.png' %}" alt="Răsfățul Pescarului Logo" class="footer-logo mb-3">
+                    <h4 class="text-white fw-bold">Răsfățul Pescarului</h4>
+                </div>
+                <p class="text-light">
+                    Magazinul tău online de încredere pentru echipamente de pescuit și informații despre cele mai bune locuri de pescuit din România.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="text-white me-3" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white me-3" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white me-3" target="_blank"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="text-white" target="_blank"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-6 mb-4">
+                <h5 class="text-white mb-4">Link-uri Rapide</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'main:home' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Acasă
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'main:shop' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Magazin
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'main:locations_map' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Bălți
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'main:tutorials' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Tutoriale
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Legal Links -->
+            <div class="col-lg-2 col-md-6 mb-4">
+                <h5 class="text-white mb-4">Informații Legale</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'main:terms' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Termeni și Condiții
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'main:about' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Despre Noi
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'main:contact' %}" class="text-light text-decoration-none hover-link">
+                            <i class="fas fa-chevron-right me-2"></i>Contact
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="col-lg-2 mb-4">
+                <h5 class="text-white mb-4">Contact</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Strada Exemplu, Nr. 123, București
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-phone me-2"></i>
+                        <a href="tel:+40123456789" class="text-light text-decoration-none hover-link">+40 123 456 789</a>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-envelope me-2"></i>
+                        <a href="mailto:contact@rasfatulpescarului.ro" class="text-light text-decoration-none hover-link">
+                            contact@rasfatulpescarului.ro
+                        </a>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock me-2"></i>
+                        Luni - Vineri: 09:00 - 18:00
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="col-lg-2 mb-4">
+                <h5 class="text-white mb-4">Newsletter</h5>
+                <p class="text-light mb-3">Abonează-te pentru a primi noutăți și oferte speciale!</p>
+                <form id="newsletter-form" class="newsletter-form">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Email" required>
+                        <button class="btn btn-success" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <small class="form-text text-light">
+                        Te poți dezabona oricând printr-un simplu click.
+                    </small>
+                </form>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5 class="text-white mb-3">Metode de Plată Acceptate</h5>
+                <div class="payment-methods">
+                    <i class="fab fa-cc-visa fa-2x me-3"></i>
+                    <i class="fab fa-cc-mastercard fa-2x me-3"></i>
+                    <i class="fab fa-cc-paypal fa-2x me-3"></i>
+                    <i class="fas fa-money-bill-wave fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4 opacity-25">
+
+        <!-- Copyright -->
+        <div class="row">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="mb-0">&copy; {% now "Y" %} Răsfățul Pescarului. Toate drepturile rezervate.</p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <img src="{% static 'images/romania.svg' %}" alt="Romania Flag" class="footer-flag">
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+.footer_color {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 100%);
+}
+
+.footer-logo {
+    max-height: 60px;
+    width: auto;
+}
+
+.footer-flag {
+    height: 20px;
+    width: auto;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: #28a745;
+    transform: translateY(-3px);
+}
+
+.hover-link {
+    transition: all 0.3s ease;
+}
+
+.hover-link:hover {
+    color: #28a745 !important;
+    padding-left: 5px;
+}
+
+.payment-methods i {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
+}
+
+.payment-methods i:hover {
+    color: #ffffff;
+}
+
+.newsletter-form .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.newsletter-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.newsletter-form .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+}
+</style>

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Plată cu cardul - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Plată cu cardul</h3>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Suma de plată: <strong>{{ order.total_amount }} Lei</strong>
+                    </div>
+
+                    <!-- Card payment form -->
+                    <form id="payment-form" class="mb-4">
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Detalii card</label>
+                            <div id="card-element" class="form-control" style="height: 2.4em; padding-top: .5em;"></div>
+                            <div id="card-errors" class="invalid-feedback" style="display: none;"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="submit-button">
+                            <i class="fas fa-lock me-2"></i>
+                            <span id="button-text">Plătește {{ order.total_amount }} Lei</span>
+                            <span id="spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="text-muted small mb-0">
+                            <i class="fas fa-lock me-1"></i> Plată securizată prin
+                            <img src="https://stripe.com/img/v3/home/twitter.svg" alt="Stripe" height="20" class="ms-1">
+                        </p>
+                        <p class="text-muted small mb-0">
+                            Acceptăm Visa, Mastercard și alte carduri principale
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements({
+        locale: 'ro',
+        appearance: {
+            theme: 'stripe',
+            variables: {
+                colorPrimary: '#0d6efd',
+                colorBackground: '#ffffff',
+                colorText: '#32325d',
+                colorDanger: '#dc3545',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '4px'
+            }
+        }
+    });
+    
+    // Create card Element
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#32325d',
+                '::placeholder': {
+                    color: '#aab7c4'
+                },
+                ':-webkit-autofill': {
+                    color: '#32325d'
+                }
+            },
+            invalid: {
+                color: '#dc3545',
+                iconColor: '#dc3545'
+            }
+        },
+        hidePostalCode: true
+    });
+    
+    // Mount card Element
+    cardElement.mount('#card-element');
+    
+    // Handle validation errors
+    cardElement.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+            displayError.style.display = 'block';
+        } else {
+            displayError.textContent = '';
+            displayError.style.display = 'none';
+        }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        // Disable form submission
+        submitButton.disabled = true;
+        buttonText.textContent = 'Se procesează...';
+        spinner.classList.remove('d-none');
+        
+        try {
+            const {error} = await stripe.confirmCardPayment('{{ client_secret }}', {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: '{{ order.full_name }}',
+                        email: '{{ order.email }}'
+                    }
+                }
+            });
+            
+            if (error) {
+                // Show error and re-enable form
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = error.message;
+                errorElement.style.display = 'block';
+                submitButton.disabled = false;
+                buttonText.textContent = 'Plătește {{ order.total_amount }} Lei';
+                spinner.classList.add('d-none');
+            } else {
+                // Payment successful - redirect to success page
+                window.location.href = "{% url 'main:checkout_success' %}";
+            }
+        } catch (e) {
+            console.error('Error:', e);
+            // Show error and re-enable form
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = 'A apărut o eroare la procesarea plății. Vă rugăm să încercați din nou.';
+            errorElement.style.display = 'block';
+            submitButton.disabled = false;
+            buttonText.textContent = 'Plătește {{ order.total_amount }} Lei';
+            spinner.classList.add('d-none');
+        }
+    });
+</script>
+{% endblock %}

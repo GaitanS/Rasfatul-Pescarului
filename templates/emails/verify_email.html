@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verificare email - Răsfățul Pescarului</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #2C5530; margin-bottom: 20px;">Verificare adresă email</h1>
+
+    <p>Bună {{ name }},</p>
+
+    <p>Vă mulțumim pentru înregistrarea pe site-ul Răsfățul Pescarului. Pentru a activa contul dumneavoastră, vă rugăm să accesați link-ul de mai jos:</p>
+
+    <p style="margin: 30px 0;">
+        <a href="{{ verification_url }}" 
+           style="display: inline-block; padding: 12px 24px; background-color: #2C5530; color: white; text-decoration: none; border-radius: 5px;">
+            Verifică adresa email
+        </a>
+    </p>
+
+    <p>Sau copiați și accesați următorul link în browser:</p>
+    <p style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all;">
+        {{ verification_url }}
+    </p>
+
+    <p>Link-ul este valabil 24 de ore. Dacă nu ați creat un cont pe site-ul nostru, vă rugăm să ignorați acest email.</p>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666;">
+        <p>Cu stimă,<br>Echipa Răsfățul Pescarului</p>
+    </div>
+</body>
+</html>

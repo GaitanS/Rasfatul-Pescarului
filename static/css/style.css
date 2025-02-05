@@ -1,0 +1,497 @@
+/* General Styles */
+:root {
+    --primary-color: #198653;
+    --secondary-color: #188552;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: white;
+    transition: all 0.3s ease;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.logo-img {
+    width: auto;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.nav-link {
+    color: var(--dark-color) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+}
+
+.navbar-spacer {
+    height: 76px; /* Adjust based on navbar height */
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+    z-index: -1;
+}
+
+.hero-text {
+    color: white;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.hero-text h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Welcome Section */
+.welcome-section {
+    padding: 5rem 0;
+    background-color: var(--light-color);
+}
+
+.image-container img {
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.image-container img:hover {
+    transform: scale(1.02);
+}
+
+.text-container h2 {
+    color: var(--dark-color);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.text-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background-color: var(--primary-color);
+}
+
+/* Featured Products Section */
+.deals-section {
+    padding: 5rem 0;
+    background-color: white;
+}
+
+.deals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.deal-card {
+    background-color: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.deal-card:hover {
+    transform: translateY(-10px);
+}
+
+.deal-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.deal-content {
+    padding: 1.5rem;
+}
+
+.deal-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.deal-price {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+/* Fishing Locations Section */
+.fishing-explore-section {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5rem 0;
+}
+
+.fishing-explore-container {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.fishing-text-content {
+    flex: 1;
+}
+
+.fishing-image-container {
+    flex: 1;
+}
+
+.fishing-image-container img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Video Tutorials Section */
+.video-courses-section {
+    padding: 5rem 0;
+    background-color: var(--light-color);
+}
+
+.course-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-10px);
+}
+
+.card-img-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-img-container img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.badge-play {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover .badge-play {
+    transform: scale(1.1);
+}
+
+/* Testimonials Section */
+.testimonial-section {
+    padding: 5rem 0;
+    background-color: white;
+}
+
+.testimonial-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin: 1rem;
+}
+
+.testimonial-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    object-fit: cover;
+}
+
+/* Promotional Video Section */
+.promo-section {
+    position: relative;
+    padding: 5rem 0;
+    background-image: url('../images/img_4.png');
+    background-size: cover;
+    background-position: center;
+    color: white;
+}
+
+.promo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8));
+}
+
+.promo-play-button {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.promo-play-button:hover {
+    transform: scale(1.1);
+}
+
+/* Footer Styles */
+.footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 5rem 0 2rem;
+}
+
+.footer-logo {
+    height: 40px;
+    margin-bottom: 1rem;
+}
+
+.social-links a {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.footer-flag {
+    height: 20px;
+    margin-left: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .hero-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .fishing-explore-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .fishing-text-content {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        background-color: white;
+    }
+
+    .navbar-collapse {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+
+    .deals-container {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-section .image-container {
+        margin-bottom: 2rem;
+    }
+
+    .text-container {
+        text-align: center;
+    }
+
+    .text-container h2::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Utility Classes */
+.btn-success {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-success:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.text-success {
+    color: var(--primary-color) !important;
+}
+
+.bg-success {
+    background-color: var(--primary-color) !important;
+}
+
+/* Solunar Page Styles */
+.solunar-card {
+    transition: transform 0.2s ease;
+}
+
+.solunar-card:hover {
+    transform: translateY(-5px);
+}
+
+#solunar-data .card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#solunar-data .card-body {
+    padding: 1.5rem;
+}
+
+#solunar-data h5 {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#solunar-data .progress {
+    border-radius: 1rem;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#solunar-data .progress-bar {
+    border-radius: 1rem;
+    transition: width 0.6s ease;
+}
+
+#date-picker, #location-select {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#date-picker:focus, #location-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(25, 134, 83, 0.25);
+}
+
+.major-period, .minor-period {
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 0.5px;
+}
+
+.card-subtitle i {
+    color: var(--primary-color);
+}
+
+.list-unstyled i {
+    width: 20px;
+    text-align: center;
+}

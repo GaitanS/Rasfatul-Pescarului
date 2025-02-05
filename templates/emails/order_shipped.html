@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .tracking-info {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #198754;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ logo_url }}" alt="Răsfățul Pescarului" class="logo">
+        <h1>Comanda ta a fost expediată!</h1>
+    </div>
+
+    <div class="content">
+        <p>Dragă {{ order.user.get_full_name }},</p>
+
+        <p>Avem vești bune! Comanda ta #{{ order.id }} a fost expediată și este în drum spre tine.</p>
+
+        {% if order.tracking_number %}
+        <div class="tracking-info">
+            <h3>Informații livrare:</h3>
+            <p><strong>Număr AWB:</strong> {{ order.tracking_number }}</p>
+            <p><strong>Curier:</strong> {{ order.courier }}</p>
+            <p>Poți urmări statusul comenzii tale folosind numărul AWB pe site-ul curierului.</p>
+        </div>
+        {% endif %}
+
+        <h3>Detalii comandă:</h3>
+        <ul>
+            {% for item in order.items.all %}
+            <li>{{ item.product.name }} x {{ item.quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Adresă livrare:</h3>
+        <p>{{ order.shipping_address|linebreaks }}</p>
+
+        <p>Timpul estimat de livrare este de 1-2 zile lucrătoare.</p>
+
+        <div style="text-align: center;">
+            <a href="{{ order_url }}" class="button">Vezi detalii comandă</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Pentru orice întrebări sau nelămuriri legate de livrare, nu ezita să ne contactezi la adresa <a href="mailto:contact@rasfatulpescarului.ro">contact@rasfatulpescarului.ro</a> sau la numărul de telefon <a href="tel:+40123456789">+40 123 456 789</a>.</p>
+        <p>© {{ current_year }} Răsfățul Pescarului. Toate drepturile rezervate.</p>
+    </div>
+</body>
+</html>

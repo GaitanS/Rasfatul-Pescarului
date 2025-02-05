@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-3">Bălți de pescuit</h1>
+            <p class="lead">Descoperă cele mai bune locuri de pescuit din România</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="mb-0">{{ lakes.count }} locații disponibile</p>
+                </div>
+                <div>
+                    <a href="{% url 'main:locations_map' %}" class="btn btn-outline-success">
+                        <i class="fas fa-map-marker-alt me-2"></i>Vezi pe hartă
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Counties -->
+    <div class="row mb-4">
+        <div class="col">
+            <h4 class="mb-3">Județe</h4>
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                {% for county in counties %}
+                <div class="col">
+                    <a href="{% url 'main:county_lakes' county.slug %}" class="text-decoration-none">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-success mb-0">{{ county.name }}</h5>
+                                <small class="text-muted">{{ county.lakes.count }} locații</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lakes -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for lake in lakes %}
+        <div class="col">
+            <div class="card h-100">
+                {% if lake.image %}
+                <img src="{{ lake.image.url }}" class="card-img-top" alt="{{ lake.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <img src="{% static 'images/lake-placeholder.jpg' %}" class="card-img-top" alt="{{ lake.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ lake.name }}</h5>
+                    <p class="card-text">{{ lake.description|truncatechars:100 }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-fish me-2"></i>{{ lake.fish_types }}</li>
+                        <li><i class="fas fa-coins me-2"></i>{{ lake.price_per_day }} Lei/zi</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i>{{ lake.address }}</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{% url 'main:lake_detail' lake.id %}" class="btn btn-success">
+                            Vezi detalii
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Nu există bălți de pescuit înregistrate momentan.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

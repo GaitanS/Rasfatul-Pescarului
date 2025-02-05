@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .payment-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+    }
+    .payment-error {
+        color: #dc3545;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #dc3545;
+        border-radius: 5px;
+        display: none;
+    }
+    .retry-payment {
+        margin-top: 15px;
+    }
+    .status-badge {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h2 class="mb-4">Detalii Comandă #{{ order.id }}</h2>
+
+            <!-- Status and Payment Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Status Comandă</h5>
+                        <span id="order-status" 
+                              class="badge bg-{{ order.get_status_color }}"
+                              data-order-id="{{ order.id }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Payment Error Display -->
+                    <div id="payment-error" class="payment-error"></div>
+
+                    <!-- Payment Details -->
+                    <div id="payment-details" class="payment-details"></div>
+
+                    <!-- Retry Payment Button -->
+                    {% if order.status in 'payment_failed,awaiting_payment,pending' %}
+                    <div class="retry-payment text-center">
+                        <a href="{% url 'main:retry_payment' order.id %}" 
+                           id="retry-payment-btn"
+                           class="btn btn-primary">
+                            Reîncearcă Plata
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Informații Comandă</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Data comenzii:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                    <p><strong>Metodă de plată:</strong> {{ order.get_payment_method_display }}</p>
+                    <p><strong>Email:</strong> {{ order.email }}</p>
+                    <p><strong>Telefon:</strong> {{ order.phone }}</p>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Produse Comandate</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produs</th>
+                                    <th>Cantitate</th>
+                                    <th>Preț unitar</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.unit_price }} Lei</td>
+                                    <td>{{ item.total_price }} Lei</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td>{{ order.subtotal }} Lei</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Transport:</strong></td>
+                                    <td>{% if order.shipping_cost > 0 %}{{ order.shipping_cost }}{% else %}Gratuit{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td><strong>{{ order.total_amount }} Lei</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Adresă Livrare</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ order.full_name }}</p>
+                    <p>{{ order.address }}</p>
+                    <p>{{ order.city }}, {{ order.county.name }}</p>
+                    <p>{{ order.postal_code }}</p>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {% if order.notes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Note Comandă</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ order.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Cancel Order Button -->
+            {% if order.status == 'pending' %}
+            <div class="text-center">
+                <a href="{% url 'main:order_cancel' order.id %}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Sigur doriți să anulați această comandă?')">
+                    Anulează Comanda
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/payment-status.js' %}"></script>
+{% endblock %}

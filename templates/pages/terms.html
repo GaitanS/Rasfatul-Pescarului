@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Termeni și Condiții - Răsfățul Pescarului{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-4">Termeni și Condiții</h1>
+        <p class="lead text-muted">Ultima actualizare: {% now "d F Y" %}</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-lg-5">
+                    <!-- Introduction -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">1. Introducere</h2>
+                        <p>Bine ați venit pe site-ul Răsfățul Pescarului. Prin accesarea și utilizarea acestui site web, sunteți de acord cu acești termeni și condiții de utilizare. Vă rugăm să citiți cu atenție următoarele informații.</p>
+                    </section>
+
+                    <!-- Definitions -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">2. Definiții</h2>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <strong>Site</strong> - website-ul www.rasfatulpescarului.ro
+                            </li>
+                            <li class="mb-3">
+                                <strong>Utilizator</strong> - orice persoană care accesează și utilizează site-ul
+                            </li>
+                            <li class="mb-3">
+                                <strong>Cont</strong> - secțiunea din site accesibilă utilizatorului prin folosirea adresei de email și a parolei
+                            </li>
+                            <li class="mb-3">
+                                <strong>Comandă</strong> - document electronic ce reprezintă forma de comunicare între Vânzător și Cumpărător
+                            </li>
+                        </ul>
+                    </section>
+
+                    <!-- Account Terms -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">3. Termeni privind Contul</h2>
+                        <p>Pentru a putea plasa comenzi pe site-ul nostru, trebuie să creați un cont. Prin crearea unui cont, vă asumați responsabilitatea pentru:</p>
+                        <ul>
+                            <li class="mb-2">Furnizarea de informații corecte și complete</li>
+                            <li class="mb-2">Păstrarea confidențialității datelor de acces</li>
+                            <li class="mb-2">Toate activitățile care au loc în contul dumneavoastră</li>
+                            <li class="mb-2">Notificarea imediată a oricărei utilizări neautorizate a contului</li>
+                        </ul>
+                    </section>
+
+                    <!-- Products and Orders -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">4. Produse și Comenzi</h2>
+                        <p>Toate produsele prezentate pe site sunt descrise cu acuratețe și prezintă informații detaliate. Cu toate acestea:</p>
+                        <ul>
+                            <li class="mb-2">Ne rezervăm dreptul de a modifica prețurile fără notificare prealabilă</li>
+                            <li class="mb-2">Imaginile produselor sunt cu titlu de prezentare</li>
+                            <li class="mb-2">Disponibilitatea produselor poate varia</li>
+                            <li class="mb-2">Comenzile sunt procesate în ordinea primirii lor</li>
+                        </ul>
+                    </section>
+
+                    <!-- Payment and Delivery -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">5. Plată și Livrare</h2>
+                        <p>Acceptăm următoarele metode de plată:</p>
+                        <ul>
+                            <li class="mb-2">Card bancar (prin procesator securizat)</li>
+                            <li class="mb-2">Transfer bancar</li>
+                            <li class="mb-2">Ramburs la livrare</li>
+                        </ul>
+                        <p>Livrarea se face prin curier în toată România, în termen de 2-5 zile lucrătoare.</p>
+                    </section>
+
+                    <!-- Returns and Refunds -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">6. Returnări și Rambursări</h2>
+                        <p>Aveți dreptul să returnați produsele în termen de 14 zile de la primire, fără a fi necesară justificarea deciziei de returnare. Pentru a fi acceptat returul, produsele trebuie să fie:</p>
+                        <ul>
+                            <li class="mb-2">În starea lor originală</li>
+                            <li class="mb-2">Cu toate etichetele atașate</li>
+                            <li class="mb-2">În ambalajul original</li>
+                            <li class="mb-2">Însoțite de factura originală</li>
+                        </ul>
+                    </section>
+
+                    <!-- Privacy -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">7. Confidențialitate</h2>
+                        <p>Protejarea datelor dumneavoastră personale este o prioritate pentru noi. Toate informațiile colectate sunt tratate conform Politicii de Confidențialitate, în conformitate cu GDPR.</p>
+                    </section>
+
+                    <!-- Intellectual Property -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">8. Proprietate Intelectuală</h2>
+                        <p>Toate elementele de conținut de pe site (texte, imagini, logo-uri, etc.) sunt proprietatea Răsfățul Pescarului și sunt protejate de legile privind drepturile de autor și proprietatea intelectuală.</p>
+                    </section>
+
+                    <!-- Final Provisions -->
+                    <section>
+                        <h2 class="h4 mb-4">9. Dispoziții Finale</h2>
+                        <p>Ne rezervăm dreptul de a modifica acești termeni și condiții în orice moment. Modificările intră în vigoare în momentul publicării lor pe site. Utilizarea în continuare a site-ului după publicarea modificărilor constituie acceptarea acestora.</p>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="text-center mt-5">
+                <p class="mb-4">Aveți întrebări despre termenii și condițiile noastre?</p>
+                <a href="{% url 'main:contact' %}" class="btn btn-success">
+                    <i class="fas fa-envelope me-2"></i>Contactați-ne
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
