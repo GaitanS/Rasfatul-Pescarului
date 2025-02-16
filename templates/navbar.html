@@ -4,11 +4,7 @@
         <a class="navbar-brand" href="{% url 'main:home' %}">
             <img src="{% static 'images/logo.png' %}" alt="Răsfățul Pescarului" height="40">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
+        
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- Left side menu -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -56,32 +52,48 @@
 
                 <!-- User menu -->
                 {% if user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li>
-                            <a class="dropdown-item" href="{% url 'main:profile' %}">
-                                <i class="fas fa-user-circle me-2"></i>Profil
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'main:orders' %}">
-                                <i class="fas fa-box me-2"></i>Comenzile mele
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'main:logout' %}">
-                                <i class="fas fa-sign-out-alt me-2"></i>Deconectare
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                    <!-- Desktop version (with dropdown) -->
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'main:profile' %}">
+                                    <i class="fas fa-user-circle me-2"></i>Profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'main:orders' %}">
+                                    <i class="fas fa-box me-2"></i>Comenzile mele
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'main:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Deconectare
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Mobile version (simple links) -->
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="{% url 'main:profile' %}">
+                            <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                        </a>
+                    </li>
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="{% url 'main:orders' %}">
+                            <i class="fas fa-box me-1"></i>Comenzile mele
+                        </a>
+                    </li>
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="{% url 'main:logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Deconectare
+                        </a>
+                    </li>
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'main:login' %}">
@@ -96,5 +108,10 @@
                 {% endif %}
             </ul>
         </div>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
     </div>
 </nav>

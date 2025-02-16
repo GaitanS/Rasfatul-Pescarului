@@ -1,4 +1,14 @@
-/* General Styles */
+/* Global styles */
+.list-group-item.active {
+    background-color: #198653 !important;
+    border-color: #198653 !important;
+}
+
+.list-group-item.active:hover {
+    background-color: #157347 !important;
+    border-color: #157347 !important;
+}
+
 :root {
     --primary-color: #198653;
     --secondary-color: #188552;
@@ -6,6 +16,35 @@
     --light-color: #f8f9fa;
 }
 
+a {
+    color: #198653;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #157347;
+}
+
+.form-check-input:checked {
+    background-color: #198653 !important;
+    border-color: #198653 !important;
+}
+
+.text-success {
+    color: #198653 !important;
+}
+
+.btn-success {
+    background-color: #198653;
+    border-color: #198653;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #157347;
+}
+
+/* Rest of the existing styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -62,17 +101,83 @@ body {
 
 @media (max-width: 768px) {
     .navbar {
-        position: static !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    .navbar-toggler {
-        margin: 0 auto;
+    .navbar .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
     }
 
     .navbar-brand {
-        margin: 0 auto;
-        text-align: center;
-        width: 100%;
+        margin: 0;
+        width: auto;
+        order: 1;
+    }
+
+    .navbar-collapse {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background-color: white;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        order: 2;
+        z-index: 1029;
+    }
+
+    .navbar-toggler {
+        padding: 0.5rem;
+        margin: 0;
+        border: 1px solid rgba(0,0,0,.1);
+        border-radius: 4px;
+        order: 3;
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    .nav-link {
+        padding: 1rem !important;
+        border-bottom: 1px solid rgba(0,0,0,.1);
+        font-size: 1.1rem;
+    }
+
+    .nav-link:last-child {
+        border-bottom: none;
+    }
+
+    .dropdown-menu {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin-top: 0;
+    }
+
+    .dropdown-item {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,.1);
+        white-space: normal;
+    }
+
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    body {
+        padding-top: 70px;
     }
 }
 
@@ -203,17 +308,44 @@ body {
 /* Welcome Section */
 .welcome-section {
     padding: 5rem 0;
-    background-color: var(--light-color);
+    background-color: white;
 }
 
-.image-container img {
-    border-radius: 20px;
+/* Welcome Section Image */
+.welcome-section .image-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-section .image-container img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 50%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 }
 
-.image-container img:hover {
+.welcome-section .image-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.welcome-section .image-container img:hover {
     transform: scale(1.02);
+}
+
+.text-container {
+    padding: 2rem;
 }
 
 .text-container h2 {
@@ -231,6 +363,12 @@ body {
     width: 60px;
     height: 4px;
     background-color: var(--primary-color);
+}
+
+.text-container p {
+    color: #666;
+    font-size: 1.2rem;
+    line-height: 1.8;
 }
 
 /* Featured Products Section */
@@ -285,26 +423,71 @@ body {
     background-color: var(--primary-color);
     color: white;
     padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
 }
 
 .fishing-explore-container {
     display: flex;
     align-items: center;
     gap: 4rem;
+    position: relative;
+    z-index: 2;
 }
 
 .fishing-text-content {
     flex: 1;
 }
 
+.fishing-text-content h2 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 2rem;
+}
+
+.fishing-text-content p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    opacity: 0.9;
+}
+
 .fishing-image-container {
     flex: 1;
+    position: relative;
+}
+
+.fishing-image-container::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
 }
 
 .fishing-image-container img {
     width: 100%;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+@media (max-width: 992px) {
+    .fishing-text-content h2 {
+        font-size: 2.5rem;
+        text-align: center;
+    }
+    
+    .fishing-text-content p {
+        text-align: center;
+    }
+    
+    .fishing-image-container::before {
+        display: none;
+    }
 }
 
 /* Video Tutorials Section */
@@ -588,4 +771,60 @@ body {
 .list-unstyled i {
     width: 20px;
     text-align: center;
+}
+
+/* County Selection Section */
+.county-selection-section {
+    background-color: var(--light-color);
+    padding: 5rem 0;
+}
+
+.county-selection-section h2 {
+    color: var(--dark-color);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.county-selection-section p {
+    color: #666;
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.map-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.map-link {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.map-link:hover {
+    transform: scale(1.02);
+}
+
+.romania-map {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+}
+
+@media (max-width: 768px) {
+    .county-selection-section h2 {
+        font-size: 2rem;
+    }
+    
+    .county-selection-section p {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+    }
+    
+    .map-container {
+        padding: 1rem;
+    }
 }

@@ -45,14 +45,79 @@ document.addEventListener('DOMContentLoaded', function() {
     const navbarCollapse = document.querySelector('.navbar-collapse');
 
     if (navbarToggler && navbarCollapse) {
-        navbarToggler.addEventListener('click', function() {
-            navbarCollapse.classList.toggle('show');
+        // Initialize Bootstrap collapse
+        const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+            toggle: false
         });
 
-        // Close mobile menu when clicking outside
+        // Initialize all dropdowns
+        const dropdowns = document.querySelectorAll('.dropdown-toggle');
+        dropdowns.forEach(dropdown => {
+            new bootstrap.Dropdown(dropdown, {
+                popperConfig: function (defaultBsPopperConfig) {
+                    return defaultBsPopperConfig;
+                }
+            });
+        });
+
+        // Toggle menu when button is clicked
+        navbarToggler.addEventListener('click', function() {
+            bsCollapse.toggle();
+        });
+
+        // Handle mobile dropdown clicks
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
+                element.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        // If we're on mobile, follow the link directly
+                        window.location.href = this.getAttribute('href');
+                        return;
+                    }
+                    // On desktop, keep default dropdown behavior
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dropdownMenu = this.nextElementSibling;
+                    if (dropdownMenu) {
+                        // Close other dropdowns
+                        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                            if (menu !== dropdownMenu) {
+                                menu.classList.remove('show');
+                            }
+                        });
+                        dropdownMenu.classList.toggle('show');
+                    }
+                });
+            });
+
+            // Close dropdown when clicking its items
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    bsCollapse.hide();
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                });
+            });
+        }
+
+        // Close menu when clicking a regular link
+        document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)').forEach(link => {
+            link.addEventListener('click', () => {
+                bsCollapse.hide();
+            });
+        });
+
+        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
-            if (!navbarCollapse.contains(e.target) && !navbarToggler.contains(e.target)) {
-                navbarCollapse.classList.remove('show');
+            if (!navbarCollapse.contains(e.target) && 
+                !navbarToggler.contains(e.target) && 
+                navbarCollapse.classList.contains('show')) {
+                bsCollapse.hide();
+                // Also close any open dropdowns
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                });
             }
         });
     }
