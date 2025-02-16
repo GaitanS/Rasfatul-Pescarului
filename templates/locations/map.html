@@ -1,35 +1,173 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
+{% block external_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block compressed_css %}
 <style>
+    /* Map container */
     #map {
         height: 600px;
         width: 100%;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: #198653;
+        overflow: hidden;
     }
+
+    .leaflet-tile-container {
+        background-color: #198653 !important;
+    }
+
+    .leaflet-tile-pane {
+        opacity: 0.7;
+    }
+
+    .leaflet-control-attribution {
+        display: none;
+    }
+
+    .marker {
+        position: absolute;
+        width: 25px;
+        height: 41px;
+        margin-left: -12px;
+        margin-top: -41px;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .marker-popup {
+        position: absolute;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 3;
+        display: none;
+    }
+
+    .marker-popup.active {
+        display: block;
+    }
+
+    /* Nearby lakes section */
+    .nearby-lakes {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .nearby-lake-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .nearby-lake-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .nearby-lake-card .distance {
+        color: #198653;
+        font-weight: 600;
+    }
+
+    /* Location permission modal */
+    .location-modal .modal-content {
+        border-radius: 1rem;
+    }
+
+    .location-modal .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .location-modal .modal-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .location-modal .modal-footer {
+        border-top: none;
+        justify-content: center;
+        padding-top: 0;
+    }
+
+    .location-modal .location-icon {
+        font-size: 3rem;
+        color: #198653;
+        margin-bottom: 1rem;
+    }
+
     .lake-popup {
-        max-width: 300px;
+        max-width: 350px;
     }
+
     .lake-popup img {
         width: 100%;
-        height: 150px;
+        height: 180px;
         object-fit: cover;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
     }
+
     .lake-popup h5 {
         margin: 0 0 10px 0;
-        color: #2c3e50;
+        color: var(--dark-color);
+        font-size: 1.2rem;
+        font-weight: 600;
     }
+
     .lake-popup p {
-        margin: 5px 0;
-        color: #34495e;
+        margin: 8px 0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
+
+    .lake-popup i {
+        color: var(--primary-color);
+        width: 20px;
+        text-align: center;
+    }
+
+    .lake-popup .facilities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+    }
+
+    .lake-popup .facility {
+        background-color: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .lake-popup .price {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        margin: 12px 0;
+    }
+
     .lake-popup .btn {
-        margin-top: 10px;
+        margin-top: 15px;
+        width: 100%;
     }
 </style>
 {% endblock %}
@@ -118,38 +256,116 @@
         <div class="col-md-9">
             <!-- Map -->
             <div id="map"></div>
+
+            <!-- Nearby Lakes Section -->
+            <div class="nearby-lakes d-none" id="nearbyLakesSection">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Bălți și lacuri în apropiere</h3>
+                    <button class="btn btn-outline-success" onclick="requestLocation()">
+                        <i class="fas fa-location-crosshairs me-2"></i>Actualizează locația
+                    </button>
+                </div>
+                <div id="nearbyLakesList" class="row">
+                    <!-- Nearby lakes will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location Permission Modal -->
+<div class="modal fade location-modal" id="locationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <i class="fas fa-location-dot location-icon"></i>
+                <h4>Permiteți accesul la locație</h4>
+                <p>Pentru a vă arăta bălțile și lacurile din apropiere, avem nevoie de permisiunea de a vă accesa locația.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Nu acum</button>
+                <button type="button" class="btn btn-success" onclick="requestLocation()">Permite accesul</button>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block external_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map
-        var map = L.map('map').setView([45.9432, 24.9668], 7);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        // Show location modal
+        if ("geolocation" in navigator) {
+            const locationModal = new bootstrap.Modal(document.getElementById('locationModal'));
+            locationModal.show();
+        }
 
-        // Add markers for each lake
-        {% for lake in lakes %}
-        var marker = L.marker([{{ lake.latitude }}, {{ lake.longitude }}]).addTo(map);
-        var popupContent = `
-            <div class="lake-popup">
-                {% if lake.image %}
-                <img src="{{ lake.image.url }}" alt="{{ lake.name }}">
-                {% endif %}
-                <h5>{{ lake.name }}</h5>
-                <p><i class="fas fa-map-marker-alt"></i> {{ lake.county.name }}</p>
-                <p><i class="fas fa-fish"></i> {{ lake.fish_types }}</p>
-                <p><i class="fas fa-coins"></i> {{ lake.price_per_day }} Lei/zi</p>
-                <a href="{% url 'main:lake_detail' lake.id %}" class="btn btn-success btn-sm">Vezi detalii</a>
-            </div>
-        `;
-        marker.bindPopup(popupContent);
-        {% endfor %}
+        // Initialize map and variables
+        var activePopup = null;  // Track currently open popup
+        var romaniaCenter = [45.9432, 24.9668];
+        var map = L.map('map', {
+            zoomControl: true,
+            scrollWheelZoom: true,
+            keyboard: true,
+            doubleClickZoom: true,
+            boxZoom: true,
+            touchZoom: true,
+            minZoom: 7,
+            maxZoom: 7,
+            dragging: true
+        }).setView(romaniaCenter, 7);
+
+        // Set map background color
+        map.getContainer().style.background = '#198653';
+
+        // Load GeoJSON data for Romania's borders
+        fetch('/static/data/romania-borders.geojson')
+            .then(response => response.json())
+            .then(data => {
+                // Create double border effect
+                // First layer - outer white border
+                L.geoJSON(data, {
+                    style: {
+                        color: 'white',
+                        weight: 12,
+                        fillColor: 'transparent',
+                        fillOpacity: 0,
+                        opacity: 1,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    },
+                    interactive: false
+                }).addTo(map);
+
+                // Second layer - inner fill
+                L.geoJSON(data, {
+                    style: {
+                        color: '#198653',
+                        weight: 10,
+                        fillColor: '#198653',
+                        fillOpacity: 1,
+                        opacity: 1,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    },
+                    interactive: false
+                }).addTo(map);
+
+                // Create initial view of Romania
+                const bounds = L.geoJSON(data).getBounds();
+                map.fitBounds(bounds, {
+                    animate: false,
+                    padding: [20, 20]
+                });
+            });
 
         // Price range display
         var priceRange = document.getElementById('priceRange');
@@ -158,10 +374,167 @@
             priceValue.textContent = this.value;
         });
 
+        // Store all markers in an array
+        var markers = [];
+        
+        // Function to request location
+        window.requestLocation = function() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    // Fetch nearby lakes
+                    fetch(`/api/nearby-lakes/?lat=${userLat}&lng=${userLng}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Show nearby lakes section
+                            document.getElementById('nearbyLakesSection').classList.remove('d-none');
+                            
+                            // Populate nearby lakes
+                            const nearbyLakesList = document.getElementById('nearbyLakesList');
+                            nearbyLakesList.innerHTML = data.lakes.map(lake => `
+                                <div class="col-md-6 mb-3">
+                                    <div class="nearby-lake-card">
+                                        <h5>${lake.name}</h5>
+                                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>${lake.address}</p>
+                                        <p class="mb-2"><i class="fas fa-fish me-2"></i>${lake.fish_types}</p>
+                                        <p class="distance mb-3"><i class="fas fa-route me-2"></i>${lake.distance} km</p>
+                                        <div class="d-flex gap-2">
+                                            <a href="/locations/lake/${lake.id}/" class="btn btn-success flex-grow-1">
+                                                Vezi detalii
+                                            </a>
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${lake.latitude},${lake.longitude}" 
+                                               class="btn btn-outline-success" target="_blank">
+                                                <i class="fab fa-google"></i>
+                                            </a>
+                                            <a href="https://waze.com/ul?ll=${lake.latitude},${lake.longitude}&navigate=yes" 
+                                               class="btn btn-outline-success" target="_blank">
+                                                <i class="fab fa-waze"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        });
+
+                    // Close modal if open
+                    const locationModal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
+                    if (locationModal) {
+                        locationModal.hide();
+                    }
+                });
+            }
+        };
+
+        // Function to add markers to map
+        function addMarkers(lakes) {
+            // Remove existing markers
+            markers.forEach(marker => marker.remove());
+            markers = [];
+            
+            // Add new markers
+            lakes.forEach(lake => {
+                var marker = L.marker([lake.latitude, lake.longitude]).addTo(map);
+                var popup = L.popup({
+                    autoPan: true,
+                    autoPanPadding: [50, 50],
+                    closeButton: true,
+                    maxWidth: 350
+                });
+
+                // Track popup state
+                marker.on('popupopen', function(e) {
+                    activePopup = e.popup;
+                });
+
+                marker.on('popupclose', function() {
+                    if (activePopup) {
+                        activePopup = null;
+                        // Only recenter if no other popup is open
+                        map.flyTo(romaniaCenter, 7, {
+                            animate: true,
+                            duration: 0.5
+                        });
+                    }
+                });
+
+
+                var popupContent = `
+                    <div class="lake-popup">
+                        <img src="${lake.image_url || '/static/images/lake-placeholder.jpg'}" alt="${lake.name}">
+                        <h5>${lake.name}</h5>
+                        <p><i class="fas fa-map-marker-alt"></i> ${lake.address}, ${lake.county}</p>
+                        <p><i class="fas fa-fish"></i> ${lake.fish_types}</p>
+                        <div class="facilities">
+                            ${lake.facilities.map(facility => {
+                                let icon, text;
+                                if (facility === 'parcare') {
+                                    icon = 'fa-parking';
+                                    text = 'Parcare';
+                                } else if (facility === 'cazare') {
+                                    icon = 'fa-bed';
+                                    text = 'Cazare';
+                                } else if (facility === 'restaurant') {
+                                    icon = 'fa-utensils';
+                                    text = 'Restaurant';
+                                } else if (facility === 'toalete') {
+                                    icon = 'fa-restroom';
+                                    text = 'Toalete';
+                                }
+                                return `
+                                    <span class="facility">
+                                        <i class="fas ${icon}"></i> ${text}
+                                    </span>
+                                `;
+                            }).join('')}
+                        </div>
+                        <p class="price"><i class="fas fa-coins"></i> ${lake.price_per_day} Lei/zi</p>
+                        <a href="/locations/lake/${lake.id}/" class="btn btn-success">Vezi detalii</a>
+                    </div>
+                `;
+                popup.setContent(popupContent);
+                marker.bindPopup(popup);
+                markers.push(marker);
+            });
+            
+            // Keep the map fixed on Romania even when markers are added
+            if (markers.length > 0) {
+                var group = new L.featureGroup(markers);
+            }
+        }
+        
+        // Initial markers
+        addMarkers(JSON.parse('{{ lakes_json|escapejs }}'));
+        
         // Filter form submission
         document.getElementById('filterForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Add filter logic here
+            
+            // Get form values
+            const county = document.getElementById('county').value;
+            const fishTypes = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .filter(cb => ['crap', 'caras', 'stiuca', 'salau'].includes(cb.value))
+                .map(cb => cb.value);
+            const maxPrice = document.getElementById('priceRange').value;
+            const facilities = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .filter(cb => ['parcare', 'cazare', 'restaurant', 'toalete'].includes(cb.value))
+                .map(cb => cb.value);
+            
+            // Build query string
+            const params = new URLSearchParams();
+            if (county) params.append('county', county);
+            fishTypes.forEach(type => params.append('fish_types[]', type));
+            if (maxPrice) params.append('max_price', maxPrice);
+            facilities.forEach(facility => params.append('facilities[]', facility));
+            
+            // Fetch filtered lakes
+            fetch(`/locations/filter/?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    addMarkers(data.lakes);
+                })
+                .catch(error => console.error('Error:', error));
         });
     });
 </script>
