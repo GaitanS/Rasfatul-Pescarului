@@ -1,6 +1,7 @@
 import json
 import datetime
 from decimal import Decimal
+from math import radians, sin, cos, sqrt, atan2
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -179,60 +180,163 @@ def product_detail(request, slug):
         'product': product,
         'related_products': related_products
     }
+    return render(request, 'shop/detail.html', context)
 
 def cart(request):
     """View pentru coșul de cumpărături"""
-    return render(request, 'shop/cart.html')
+    cart = request.session.get('cart', {})
+    cart_items = []
+    cart_total = Decimal('0.00')
+    
+    for product_id, quantity in cart.items():
+        try:
+            product = Product.objects.get(id=product_id, is_active=True)
+            total = product.price * Decimal(str(quantity))
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'price': product.price,
+                'total': total
+            })
+            cart_total += total
+        except Product.DoesNotExist:
+            pass
+    
+    context = {
+        'cart_items': cart_items,
+        'cart_total': cart_total,
+        'shipping_cost': Decimal('0.00'),  # Add your shipping logic
+        'total_with_shipping': cart_total  # Add shipping cost if needed
+    }
+    return render(request, 'shop/cart.html', context)
 
 @require_http_methods(['POST'])
 @csrf_exempt
 def add_to_cart(request):
     """Adaugă un produs în coș"""
-    data = json.loads(request.body)
-    product_id = data.get('product_id')
-    quantity = int(data.get('quantity', 1))
-    
-    if not request.session.get('cart'):
-        request.session['cart'] = {}
-    
-    cart = request.session['cart']
-    if product_id in cart:
-        cart[product_id] += quantity
-    else:
-        cart[product_id] = quantity
-    
-    request.session.modified = True
-    return JsonResponse({'status': 'success'})
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            product_id = str(data.get('product_id'))
+            quantity = int(data.get('quantity', 1))
+        else:
+            product_id = str(request.POST.get('product_id'))
+            quantity = int(request.POST.get('quantity', 1))
+        
+        # Validate product exists
+        try:
+            product = Product.objects.get(id=int(product_id), is_active=True)
+        except (Product.DoesNotExist, ValueError):
+            if request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': 'Produs invalid'}, status=400)
+            else:
+                messages.error(request, 'Produs invalid.')
+                return redirect('main:cart')
+        
+        if not request.session.get('cart'):
+            request.session['cart'] = {}
+        
+        cart = request.session['cart']
+        if product_id in cart:
+            cart[product_id] += quantity
+        else:
+            cart[product_id] = quantity
+        
+        request.session.modified = True
+        
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'success'})
+        else:
+            messages.success(request, 'Produs adăugat în coș cu succes!')
+            return redirect('main:cart')
+            
+    except (json.JSONDecodeError, ValueError, TypeError):
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': 'Date invalide'}, status=400)
+        else:
+            messages.error(request, 'Eroare la adăugarea produsului în coș.')
+            return redirect('main:cart')
 
 @require_http_methods(['POST'])
 @csrf_exempt
 def update_cart(request):
     """Actualizează cantitatea unui produs din coș"""
-    data = json.loads(request.body)
-    product_id = data.get('product_id')
-    quantity = int(data.get('quantity', 0))
-    
-    if request.session.get('cart') and product_id in request.session['cart']:
-        if quantity > 0:
-            request.session['cart'][product_id] = quantity
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            product_id = str(data.get('product_id'))
+            quantity = int(data.get('quantity', 0))
         else:
-            del request.session['cart'][product_id]
-        request.session.modified = True
-    
-    return JsonResponse({'status': 'success'})
+            product_id = str(request.POST.get('product_id'))
+            quantity = int(request.POST.get('quantity', 0))
+        
+        # Validate product exists
+        try:
+            product = Product.objects.get(id=int(product_id), is_active=True)
+        except (Product.DoesNotExist, ValueError):
+            if request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': 'Produs invalid'}, status=400)
+            else:
+                messages.error(request, 'Produs invalid.')
+                return redirect('main:cart')
+        
+        if request.session.get('cart') and product_id in request.session['cart']:
+            if quantity > 0:
+                request.session['cart'][product_id] = quantity
+            else:
+                del request.session['cart'][product_id]
+            request.session.modified = True
+        
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'success'})
+        else:
+            messages.success(request, 'Coș actualizat cu succes!')
+            return redirect('main:cart')
+            
+    except (json.JSONDecodeError, ValueError, TypeError):
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': 'Date invalide'}, status=400)
+        else:
+            messages.error(request, 'Eroare la actualizarea coșului.')
+            return redirect('main:cart')
 
 @require_http_methods(['POST'])
 @csrf_exempt
 def remove_from_cart(request):
     """Șterge un produs din coș"""
-    data = json.loads(request.body)
-    product_id = data.get('product_id')
-    
-    if request.session.get('cart') and product_id in request.session['cart']:
-        del request.session['cart'][product_id]
-        request.session.modified = True
-    
-    return JsonResponse({'status': 'success'})
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            product_id = str(data.get('product_id'))
+        else:
+            product_id = str(request.POST.get('product_id'))
+        
+        # Validate product exists
+        try:
+            product = Product.objects.get(id=int(product_id), is_active=True)
+        except (Product.DoesNotExist, ValueError):
+            if request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': 'Produs invalid'}, status=400)
+            else:
+                messages.error(request, 'Produs invalid.')
+                return redirect('main:cart')
+        
+        if request.session.get('cart') and product_id in request.session['cart']:
+            del request.session['cart'][product_id]
+            request.session.modified = True
+        
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'success'})
+        else:
+            messages.success(request, 'Produs șters din coș cu succes!')
+            return redirect('main:cart')
+            
+    except (json.JSONDecodeError, ValueError, TypeError):
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': 'Date invalide'}, status=400)
+        else:
+            messages.error(request, 'Eroare la ștergerea produsului din coș.')
+            return redirect('main:cart')
 
 def cart_count(request):
     """Returnează numărul de produse din coș"""
@@ -253,8 +357,6 @@ def cart_total(request):
             pass
     
     return JsonResponse({'total': str(total)})
-
-    return render(request, 'shop/detail.html', context)
 
 @login_required
 def checkout(request):
@@ -279,9 +381,54 @@ def checkout(request):
         except Product.DoesNotExist:
             pass
     
+    if request.method == 'POST':
+        # Validate form data
+        if all([
+            request.POST.get('first_name'),
+            request.POST.get('last_name'),
+            request.POST.get('email'),
+            request.POST.get('phone'),
+            request.POST.get('address'),
+            request.POST.get('city'),
+            request.POST.get('county'),
+            request.POST.get('postal_code'),
+            request.POST.get('terms')
+        ]):
+            try:
+                # Create Stripe checkout session
+                stripe.api_key = settings.STRIPE_SECRET_KEY
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'ron',
+                            'unit_amount': int(total * 100),  # Stripe uses cents
+                            'product_data': {
+                                'name': 'Comandă Răsfățul Pescarului',
+                            },
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='payment',
+                    success_url=request.build_absolute_uri(reverse('main:checkout_success')),
+                    cancel_url=request.build_absolute_uri(reverse('main:checkout')),
+                    customer_email=request.POST.get('email'),
+                    metadata={
+                        'user_id': request.user.id,
+                        'shipping_address': f"{request.POST.get('address')}, {request.POST.get('city')}, {request.POST.get('postal_code')}",
+                        'phone': request.POST.get('phone')
+                    }
+                )
+                return redirect(checkout_session.url)
+            except Exception as e:
+                messages.error(request, 'Eroare la procesarea plății. Te rugăm să încerci din nou.')
+        else:
+            messages.error(request, 'Te rugăm să completezi toate câmpurile obligatorii.')
+    
     context = {
         'items': items,
-        'total': total
+        'total': total,
+        'counties': County.objects.all().order_by('name')
     }
     return render(request, 'shop/checkout.html', context)
 
@@ -313,10 +460,6 @@ def stripe_webhook(request):
         fulfill_order(session)
     
     return HttpResponse(status=200)
-
-
-
-
 
 @login_required
 def retry_payment(request, order_id):
@@ -367,16 +510,82 @@ def payment_status(request, order_id):
         'paid': order.is_paid
     })
 
-
 def fishing_locations(request):
     """View pentru lista de locații de pescuit"""
     counties = County.objects.all().order_by('name')
     return render(request, 'locations/list.html', {'counties': counties})
 
+@require_http_methods(['GET'])
+def filter_lakes(request):
+    """API endpoint pentru filtrarea lacurilor"""
+    lakes = Lake.objects.filter(is_active=True).select_related('county')
+    
+    # Apply county filter
+    county_id = request.GET.get('county')
+    if county_id:
+        lakes = lakes.filter(county_id=county_id)
+    
+    # Apply fish types filter
+    fish_types = request.GET.getlist('fish_types[]')
+    if fish_types:
+        q_objects = Q()
+        for fish in fish_types:
+            q_objects |= Q(fish_types__icontains=fish)
+        lakes = lakes.filter(q_objects)
+    
+    # Apply price filter
+    max_price = request.GET.get('max_price')
+    if max_price:
+        lakes = lakes.filter(price_per_day__lte=max_price)
+    
+    # Apply facilities filter
+    facilities = request.GET.getlist('facilities[]')
+    if facilities:
+        q_objects = Q()
+        for facility in facilities:
+            q_objects |= Q(facilities__icontains=facility)
+        lakes = lakes.filter(q_objects)
+    
+    # Format lake data for response
+    lakes_data = [{
+        'id': lake.id,
+        'name': lake.name,
+        'address': lake.address,
+        'county': lake.county.name,
+        'latitude': float(lake.latitude),
+        'longitude': float(lake.longitude),
+        'fish_types': lake.fish_types,
+        'facilities': lake.facilities.split(),
+        'price_per_day': float(lake.price_per_day),
+        'image_url': lake.image.url if lake.image else None
+    } for lake in lakes]
+    
+    return JsonResponse({'lakes': lakes_data})
+
 def locations_map(request):
     """View pentru harta locațiilor"""
     lakes = Lake.objects.filter(is_active=True).select_related('county')
-    return render(request, 'locations/map.html', {'lakes': lakes})
+    counties = County.objects.all().order_by('name')
+    
+    # Serialize lakes data for JavaScript
+    lakes_data = [{
+        'id': lake.id,
+        'name': lake.name,
+        'address': lake.address,
+        'county': lake.county.name,
+        'latitude': float(lake.latitude),
+        'longitude': float(lake.longitude),
+        'fish_types': lake.fish_types,
+        'facilities': lake.facilities.split(),
+        'price_per_day': float(lake.price_per_day),
+        'image_url': lake.image.url if lake.image else '/static/images/lake-placeholder.jpg'
+    } for lake in lakes]
+    
+    return render(request, 'locations/map.html', {
+        'lakes_json': json.dumps(lakes_data),
+        'lakes': lakes,
+        'counties': counties
+    })
 
 def county_lakes(request, county_slug):
     """View pentru lacurile dintr-un județ"""
@@ -387,11 +596,63 @@ def county_lakes(request, county_slug):
         'lakes': lakes
     })
 
+@require_http_methods(['GET'])
+def nearby_lakes(request):
+    """API endpoint pentru lacurile din apropiere"""
+    try:
+        user_lat = float(request.GET.get('lat'))
+        user_lng = float(request.GET.get('lng'))
+        
+        lakes = Lake.objects.filter(is_active=True).select_related('county')
+        
+        # Calculate distances and sort by proximity
+        lakes_with_distance = []
+        for lake in lakes:
+            # Calculate distance using Haversine formula
+            R = 6371  # Earth's radius in km
+            dlat = radians(float(lake.latitude) - user_lat)
+            dlon = radians(float(lake.longitude) - user_lng)
+            a = sin(dlat/2)**2 + cos(radians(user_lat)) * cos(radians(float(lake.latitude))) * sin(dlon/2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1-a))
+            distance = R * c
+            
+            lakes_with_distance.append({
+                'id': lake.id,
+                'name': lake.name,
+                'address': lake.address,
+                'county': lake.county.name,
+                'latitude': float(lake.latitude),
+                'longitude': float(lake.longitude),
+                'fish_types': lake.fish_types,
+                'facilities': lake.facilities.split(),
+                'price_per_day': float(lake.price_per_day),
+                'image_url': lake.image.url if lake.image else None,
+                'distance': round(distance, 1)
+            })
+        
+        # Sort by distance and limit to 6 nearest lakes
+        lakes_with_distance.sort(key=lambda x: x['distance'])
+        nearest_lakes = lakes_with_distance[:6]
+        
+        return JsonResponse({'lakes': nearest_lakes})
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid coordinates'}, status=400)
+
 def lake_detail(request, lake_id):
     """View pentru detaliile unui lac"""
-    lake = get_object_or_404(Lake, id=lake_id, is_active=True)
-    return render(request, 'locations/lake_detail.html', {'lake': lake})
-
+    lake = get_object_or_404(Lake.objects.select_related('county'), id=lake_id, is_active=True)
+    
+    # Get nearby lakes (within same county for now)
+    nearby_lakes = Lake.objects.filter(
+        county=lake.county,
+        is_active=True
+    ).exclude(id=lake.id)[:3]
+    
+    context = {
+        'lake': lake,
+        'nearby_lakes': nearby_lakes
+    }
+    return render(request, 'locations/lake_detail.html', context)
 
 def tutorials(request):
     """View pentru lista de tutoriale video"""
@@ -423,50 +684,157 @@ def video_detail(request, video_id):
         'related_videos': related_videos
     })
 
-
 def login_view(request):
     """View pentru autentificare"""
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
         
-        if user is not None:
-            login(request, user)
-            next_url = request.GET.get('next', 'main:home')
-            return redirect(next_url)
-        else:
+        try:
+            # First check if user exists and is active
+            user = User.objects.get(email=email)
+            if not user.is_active:
+                messages.error(request, 'Contul nu este activat. Verificați email-ul pentru link-ul de activare.')
+                return render(request, 'account/login.html')
+            
+            # Then try to authenticate with both username and email
+            user = authenticate(request, username=user.username, password=password)
+            if user is None:
+                user = authenticate(request, username=email, password=password)
+            
+            if user is not None:
+                login(request, user)
+                next_url = request.GET.get('next', 'main:home')
+                return redirect(next_url)
+            else:
+                messages.error(request, 'Email sau parolă incorectă.')
+        except User.DoesNotExist:
             messages.error(request, 'Email sau parolă incorectă.')
     
     return render(request, 'account/login.html')
 
 def register(request):
     """View pentru înregistrare"""
+    # Get all counties ordered by name
+    counties = County.objects.all().order_by('name')
+    context = {
+        'counties': counties,
+        'recaptcha_site_key': settings.RECAPTCHA_PUBLIC_KEY
+    }
+    
     if request.method == 'POST':
         email = request.POST.get('email')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        phone = request.POST.get('phone')
+        county_id = request.POST.get('county')
+        terms = request.POST.get('terms')
+        recaptcha_response = request.POST.get('g-recaptcha-response')
         
-        if password1 != password2:
+        # Store form data for repopulating the form
+        form_data = {
+            'email': email,
+            'first_name': first_name,
+            'last_name': last_name,
+            'phone': phone,
+            'county': county_id
+        }
+        context['form_data'] = form_data
+        
+        # Validare câmpuri obligatorii
+        if not all([email, password, confirm_password, first_name, last_name]):
+            messages.error(request, 'Toate câmpurile marcate cu * sunt obligatorii.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare termeni și condiții
+        if not terms:
+            messages.error(request, 'Trebuie să acceptați termenii și condițiile.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare reCAPTCHA
+        if not recaptcha_response:
+            messages.error(request, 'Vă rugăm să confirmați că nu sunteți robot.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare email
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Există deja un cont cu acest email.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare parole
+        if password != confirm_password:
             messages.error(request, 'Parolele nu coincid.')
-        else:
+            return render(request, 'account/register.html', context)
+        
+        if len(password) < 8:
+            messages.error(request, 'Parola trebuie să aibă minim 8 caractere.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare nume și prenume
+        if len(first_name) < 2 or len(last_name) < 2:
+            messages.error(request, 'Numele și prenumele trebuie să aibă minim 2 caractere.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare telefon (opțional)
+        if phone and not phone.isdigit():
+            messages.error(request, 'Numărul de telefon trebuie să conțină doar cifre.')
+            return render(request, 'account/register.html', context)
+        
+        # Validare județ (opțional)
+        if county_id:
             try:
-                user = User.objects.create_user(email, email, password1)
-                user.is_active = False
-                user.save()
-                
-                # Send verification email
+                county = County.objects.get(id=county_id)
+            except County.DoesNotExist:
+                messages.error(request, 'Județul selectat nu există.')
+                return render(request, 'account/register.html', context)
+        
+        try:
+            # Creare utilizator
+            username = email.split('@')[0]  # Use part before @ as username
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.is_active = False
+            user.save()
+            
+            # Actualizare profil
+            profile = user.profile
+            profile.phone = phone
+            if county_id:
+                profile.county_id = county_id
+            profile.save()
+            
+            # Trimitere email de verificare
+            try:
                 send_verification_email(request, user)
-                
-                messages.success(
+            except Exception as e:
+                messages.warning(
                     request,
-                    'Cont creat cu succes! Verifică email-ul pentru activare.'
+                    'Contul a fost creat, dar a apărut o eroare la trimiterea emailului de verificare. '
+                    'Te rugăm să contactezi suportul.'
                 )
                 return redirect('main:login')
-            except Exception as e:
-                messages.error(request, 'Eroare la crearea contului.')
+            
+            messages.success(
+                request,
+                'Cont creat cu succes! Verifică email-ul pentru activare.'
+            )
+            return redirect('main:login')
+            
+        except Exception as e:
+            # Ștergem utilizatorul dacă a fost creat
+            if 'user' in locals():
+                user.delete()
+            
+            if 'IntegrityError' in str(e):
+                messages.error(request, 'Există deja un cont cu acest email.')
+            else:
+                messages.error(request, f'Eroare la crearea contului: {str(e)}')
+            return render(request, 'account/register.html', context)
     
-    return render(request, 'account/register.html')
+    return render(request, 'account/register.html', context)
 
 def verify_email(request, uidb64, token):
     """View pentru verificarea email-ului"""
@@ -546,19 +914,38 @@ def profile(request):
 @login_required
 def edit_profile(request):
     """View pentru editarea profilului"""
+    counties = County.objects.all().order_by('name')
+    
     if request.method == 'POST':
         try:
+            # Update user fields
+            request.user.first_name = request.POST.get('first_name')
+            request.user.last_name = request.POST.get('last_name')
+            request.user.email = request.POST.get('email')
+            request.user.save()
+            
+            # Update profile fields
             profile = request.user.profile
             profile.phone = request.POST.get('phone')
+            profile.city = request.POST.get('city')
             profile.address = request.POST.get('address')
+            profile.postal_code = request.POST.get('postal_code')
+            profile.county_id = request.POST.get('county')
+            profile.newsletter = request.POST.get('newsletter') == 'on'
+            profile.order_updates = request.POST.get('order_updates') == 'on'
+            
+            # Handle avatar upload
+            if request.FILES.get('avatar'):
+                profile.avatar = request.FILES['avatar']
+            
             profile.save()
             
             messages.success(request, 'Profil actualizat cu succes!')
             return redirect('main:profile')
         except Exception as e:
-            messages.error(request, 'Eroare la actualizarea profilului.')
+            messages.error(request, f'Eroare la actualizarea profilului: {str(e)}')
     
-    return render(request, 'account/edit_profile.html')
+    return render(request, 'account/edit_profile.html', {'counties': counties})
 
 @login_required
 def change_password(request):
@@ -579,7 +966,6 @@ def change_password(request):
             return redirect('main:login')
     
     return render(request, 'account/change_password.html')
-
 
 @login_required
 def orders(request):
@@ -613,7 +999,6 @@ def order_cancel(request, order_id):
     return render(request, 'account/order_cancel_confirmation.html', {
         'order': order
     })
-
 
 def about(request):
     """View pentru pagina Despre noi"""

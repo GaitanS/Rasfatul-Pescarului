@@ -6,7 +6,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentFilters = new URLSearchParams(window.location.search);
     let debounceTimer;
 
-    // Load initial filter options
+    // Load initial products and filter options
+    if (!window.location.search) {
+        // Only add ordering for initial load
+        const params = new URLSearchParams();
+        params.append('ordering', '-created_at');
+        showLoading(true);
+        fetchWithCsrf(`/api/products/?${params.toString()}`)
+            .then(data => {
+                updateProductsGrid(data);
+                updatePagination(data);
+                if (document.getElementById('resultsCount')) {
+                    document.getElementById('resultsCount').textContent = `${data.count} produse`;
+                }
+                document.title = `Magazin (${data.count} produse) - Răsfățul Pescarului`;
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                showError('A apărut o eroare la încărcarea produselor. Te rugăm să reîncerci.');
+                updateProductsGrid({ results: [] }); // Clear products grid
+            })
+            .finally(() => {
+                showLoading(false);
+            });
+    } else {
+        applyFilters();
+    }
     loadFilterOptions();
 
     // Event listeners for filters
@@ -61,8 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadFilterOptions() {
         try {
-            const response = await fetch('/api/products/filter_options/');
-            const data = await response.json();
+            const data = await fetchWithCsrf('/api/products/filter_options/');
             
             // Update price range
             if (priceRange && data.price_range) {
@@ -100,43 +124,55 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } catch (error) {
             console.error('Error loading filter options:', error);
+            showError('A apărut o eroare la încărcarea opțiunilor de filtrare.');
         }
     }
 
     async function applyFilters(page = 1) {
         showLoading(true);
         
-        // Build query string
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams();
-
-        // Add all form fields
-        for (let [key, value] of formData.entries()) {
-            if (value) params.append(key, value);
-        }
-
-        // Add price range
-        if (priceRange) {
-            const [min, max] = priceRange.noUiSlider.get();
-            params.append('min_price', min);
-            params.append('max_price', max);
-        }
-
-        // Add page number
-        if (page > 1) params.append('page', page);
-
-        // Add sorting
-        const sort = document.getElementById('sortSelect')?.value;
-        if (sort) params.append('ordering', sort);
-
         try {
-            // Update URL
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.pushState({}, '', newUrl);
+            let params = new URLSearchParams();
+            
+            // Check if we're applying filters from form or using URL params
+            if (window.location.search && !page) {
+                // If we have URL params and it's not a pagination request, use those
+                params = new URLSearchParams(window.location.search);
+            } else {
+                // Get form data if available
+                if (filterForm) {
+                    const formData = new FormData(filterForm);
+                    for (let [key, value] of formData.entries()) {
+                        if (value) params.append(key, value);
+                    }
+                }
+                
+                // Add default sorting if not set
+                if (!params.has('ordering')) {
+                    params.append('ordering', '-created_at');
+                }
+                
+                // Add price range if available
+                if (priceRange && !params.has('min_price')) {
+                    const [min, max] = priceRange.noUiSlider.get();
+                    params.append('min_price', min);
+                    params.append('max_price', max);
+                }
+                
+                // Add page number if needed
+                if (page > 1) {
+                    params.append('page', page);
+                }
+            }
+
+            // Update URL (only if not paginating)
+            if (!page || page === 1) {
+                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                window.history.pushState({}, '', newUrl);
+            }
 
             // Fetch filtered products
-            const response = await fetch(`/api/products/?${params.toString()}`);
-            const data = await response.json();
+            const data = await fetchWithCsrf(`/api/products/?${params.toString()}`);
             
             // Update products grid
             updateProductsGrid(data);
@@ -144,9 +180,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update pagination
             updatePagination(data);
             
+            // Update results count
+            const resultsCount = document.getElementById('resultsCount');
+            if (resultsCount) {
+                resultsCount.textContent = `${data.count} produse`;
+            }
+            
+            // Update page title
+            document.title = `Magazin (${data.count} produse) - Răsfățul Pescarului`;
+            
         } catch (error) {
             console.error('Error applying filters:', error);
-            showError('A apărut o eroare la filtrarea produselor.');
+            showError('A apărut o eroare la încărcarea produselor. Te rugăm să reîncerci.');
+            updateProductsGrid({ results: [] }); // Clear products grid
         } finally {
             showLoading(false);
         }
@@ -282,6 +328,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getCsrfToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        return document.querySelector('meta[name="csrf-token"]').content;
+    }
+
+    async function fetchWithCsrf(url, options = {}) {
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        };
+        
+        const response = await fetch(url, { ...defaultOptions, ...options });
+        if (!response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const error = await response.json();
+                throw new Error(error.detail || `HTTP error! status: ${response.status}`);
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
     }
 });

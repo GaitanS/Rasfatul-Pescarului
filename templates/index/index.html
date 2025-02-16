@@ -11,9 +11,15 @@
     <div class="hero-text">
         <h1>Bine ai venit la Răsfățul Pescarului</h1>
         <p>Descoperă cele mai bune locuri de pescuit și echipamente de calitate pentru pasiunea ta!</p>
-        <a href="{% url 'main:register' %}" class="btn btn-success btn-lg">
-            Alăturați-vă clubului
-        </a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'main:profile' %}" class="btn btn-success btn-lg">
+                Accesează profilul
+            </a>
+        {% else %}
+            <a href="{% url 'main:register' %}" class="btn btn-success btn-lg">
+                Alăturați-vă clubului
+            </a>
+        {% endif %}
     </div>
 
     <!-- Valuri animate -->
@@ -64,15 +70,35 @@
     </div>
 </section>
 <!-- Call to Action -->
-<section class="cta py-5 bg-success text-white">
+<section class="cta py-5 bg-success text-white border-top">
     <div class="container text-center">
         <h2 class="mb-4">Pregătit să începi aventura?</h2>
         <p class="lead mb-4">Alătură-te comunității noastre și descoperă cele mai bune locuri de pescuit!</p>
-        <a href="{% url 'main:register' %}" class="btn btn-light btn-lg">
-            Creează cont gratuit
-        </a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'main:profile' %}" class="btn btn-light btn-lg">
+                Accesează profilul
+            </a>
+        {% else %}
+            <a href="{% url 'main:register' %}" class="btn btn-light btn-lg">
+                Creează cont gratuit
+            </a>
+        {% endif %}
     </div>
 </section>
+
+<!-- County Selection Section -->
+<section class="county-selection-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-3">Selecteaza judetul</h2>
+        <p class="text-center mb-5">Selecteaza judetul in care te afli pentru a vedea zonele de pescuit plus ce tipuri de pestii poti gasi in ele.</p>
+        <div class="map-container text-center">
+            <a href="{% url 'main:locations_map' %}" class="map-link">
+                <img src="{% static 'images/romania.svg' %}" alt="Harta Romaniei" class="romania-map img-fluid">
+            </a>
+        </div>
+    </div>
+</section>
+
 <!-- Featured Products -->
 <section class="featured-products py-5">
     <div class="container">

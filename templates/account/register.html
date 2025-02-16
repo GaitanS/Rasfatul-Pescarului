@@ -20,7 +20,7 @@
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form method="post" class="needs-validation" novalidate>
+                    <form method="post" class="register-form">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -155,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPassword = document.getElementById('confirm_password');
     const submitBtn = document.getElementById('submitBtn');
     const terms = document.getElementById('terms');
+    const requiredFields = form.querySelectorAll('[required]');
 
     // Password validation criteria
     const criteria = {
@@ -170,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const pwd = password.value;
         let valid = true;
 
-        // Check each criterion
         Object.keys(criteria).forEach(criterion => {
             const element = document.getElementById(criterion);
             if (criteria[criterion](pwd)) {
@@ -191,9 +191,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const isPasswordValid = validatePassword();
         const isConfirmValid = password.value === confirmPassword.value;
         const isTermsAccepted = terms.checked;
-        const isCaptchaCompleted = grecaptcha.getResponse().length > 0;
+        const areRequiredFieldsValid = Array.from(requiredFields).every(field => {
+            if (field.type === 'checkbox') {
+                return field.checked;
+            }
+            return field.value.trim() !== '';
+        });
 
-        submitBtn.disabled = !(isPasswordValid && isConfirmValid && isTermsAccepted && isCaptchaCompleted);
+        if (isPasswordValid && isConfirmValid && isTermsAccepted && areRequiredFieldsValid) {
+            submitBtn.disabled = false;
+        }
     }
 
     // Password visibility toggle
@@ -211,23 +218,49 @@ document.addEventListener('DOMContentLoaded', function() {
         this.querySelector('i').classList.toggle('fa-eye-slash');
     });
 
-    // Event listeners
+    // Event listeners for all required fields
+    requiredFields.forEach(field => {
+        field.addEventListener('input', checkFormValidity);
+    });
+
+    // Event listeners for password and terms
     password.addEventListener('input', checkFormValidity);
     confirmPassword.addEventListener('input', checkFormValidity);
     terms.addEventListener('change', checkFormValidity);
 
     // Form submission
     form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        } else {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const spinner = submitBtn.querySelector('.spinner-border');
-            submitBtn.disabled = true;
-            spinner.classList.remove('d-none');
+        event.preventDefault();
+        
+        const requiredFieldsValid = Array.from(requiredFields).every(field => {
+            if (field.type === 'checkbox') {
+                if (!field.checked) {
+                    field.classList.add('is-invalid');
+                    return false;
+                }
+            } else if (field.value.trim() === '') {
+                field.classList.add('is-invalid');
+                return false;
+            }
+            field.classList.remove('is-invalid');
+            return true;
+        });
+
+        if (!requiredFieldsValid) {
+            return;
         }
-        form.classList.add('was-validated');
+
+        if (!grecaptcha.getResponse()) {
+            alert('Vă rugăm să confirmați că nu sunteți robot.');
+            return;
+        }
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const spinner = submitBtn.querySelector('.spinner-border');
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        
+        this.submit();
     });
 
     // Auto-hide alerts
@@ -239,10 +272,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 3000);
 });
-
-// reCAPTCHA callback
-function onRecaptchaComplete() {
-    document.getElementById('submitBtn').disabled = false;
-}
 </script>
 {% endblock %}

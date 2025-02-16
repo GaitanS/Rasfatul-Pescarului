@@ -39,6 +39,8 @@ urlpatterns = [
     # Locations
     path('locations/', views.fishing_locations, name='fishing_locations'),
     path('locations/map/', views.locations_map, name='locations_map'),
+    path('locations/filter/', views.filter_lakes, name='filter_lakes'),
+    path('api/nearby-lakes/', views.nearby_lakes, name='nearby_lakes'),
     path('locations/county/<slug:county_slug>/', views.county_lakes, name='county_lakes'),
     path('locations/lake/<int:lake_id>/', views.lake_detail, name='lake_detail'),
     

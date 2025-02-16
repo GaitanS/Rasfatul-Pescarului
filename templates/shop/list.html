@@ -140,11 +140,11 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <select id="sortSelect" class="form-select me-2" style="width: auto;">
-                        <option value="-created_at">Cele mai noi</option>
-                        <option value="price">Preț crescător</option>
-                        <option value="-price">Preț descrescător</option>
-                        <option value="-average_rating">Cele mai bine evaluate</option>
-                        <option value="-sales_count">Cele mai vândute</option>
+                        <option value="-created_at" selected>Cele mai noi</option>
+                        <option value="price" {% if request.GET.ordering == 'price' %}selected{% endif %}>Preț crescător</option>
+                        <option value="-price" {% if request.GET.ordering == '-price' %}selected{% endif %}>Preț descrescător</option>
+                        <option value="-average_rating" {% if request.GET.ordering == '-average_rating' %}selected{% endif %}>Cele mai bine evaluate</option>
+                        <option value="-sales_count" {% if request.GET.ordering == '-sales_count' %}selected{% endif %}>Cele mai vândute</option>
                     </select>
                     <div class="text-muted" id="resultsCount"></div>
                 </div>
@@ -189,7 +189,5 @@
 
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
-{% compress js %}
 <script src="{% static 'js/shop.js' %}"></script>
-{% endcompress %}
 {% endblock %}

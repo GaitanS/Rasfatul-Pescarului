@@ -3,6 +3,23 @@
 
 {% block title %}{{ lake.name }} - Răsfățul Pescarului{% endblock %}
 
+{% block external_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+.map-container {
+    width: 100%;
+    height: 450px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5 mt-5">
     <nav aria-label="breadcrumb">
@@ -26,10 +43,74 @@
                 <div class="card-body">
                     <h1 class="card-title h2 mb-3">{{ lake.name }}</h1>
                     <p class="text-muted mb-3">
-                        <i class="fas fa-map-marker-alt me-2"></i>{{ lake.location }}
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ lake.address }}
                     </p>
                     <div class="lake-description mb-4">
                         {{ lake.description|linebreaks }}
+                    </div>
+
+                    <!-- Fish Types -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Specii de pești</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for fish in lake.fish_types.split %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-fish me-1"></i>{{ fish|title }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Facilities -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Facilități</h5>
+                        <div class="d-flex flex-wrap gap-3">
+                            {% for facility in lake.facilities.split %}
+                            <div class="facility-item">
+                                {% if facility == 'parcare' %}
+                                <i class="fas fa-parking text-success"></i>
+                                <span>Parcare</span>
+                                {% elif facility == 'cazare' %}
+                                <i class="fas fa-bed text-success"></i>
+                                <span>Cazare</span>
+                                {% elif facility == 'restaurant' %}
+                                <i class="fas fa-utensils text-success"></i>
+                                <span>Restaurant</span>
+                                {% elif facility == 'toalete' %}
+                                <i class="fas fa-restroom text-success"></i>
+                                <span>Toalete</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Preț</h5>
+                        <p class="h4 text-success">
+                            <i class="fas fa-coins me-2"></i>{{ lake.price_per_day }} Lei/zi
+                        </p>
+                    </div>
+
+                    <!-- Rules -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Reguli</h5>
+                        <div class="rules-content">
+                            {{ lake.rules|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="btn-group w-100">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ lake.latitude }},{{ lake.longitude }}" 
+                           class="btn btn-success" target="_blank">
+                            <i class="fab fa-google me-2"></i>Google Maps
+                        </a>
+                        <a href="https://waze.com/ul?ll={{ lake.latitude }},{{ lake.longitude }}&navigate=yes" 
+                           class="btn btn-success" target="_blank">
+                            <i class="fab fa-waze me-2"></i>Waze
+                        </a>
                     </div>
                 </div>
             </div>
@@ -38,7 +119,15 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Locație</h5>
-                    <div id="map" style="height: 400px;"></div>
+                    <div class="map-container">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d4689.560780351744!2d{{ lake.longitude|stringformat:'f' }}!3d{{ lake.latitude|stringformat:'f' }}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x474cd9332db023a5%3A0xd953c09db90dfa87!2s{{ lake.name|urlencode }}!5e0!3m2!1sro!2sro!4v1739735917908!5m2!1sro!2sro"
+                            style="border:0;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,24 +165,30 @@
     </div>
 </div>
 
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map
-    const map = L.map('map').setView([{{ lake.latitude }}, {{ lake.longitude }}], 13);
-    
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    // Add marker for lake location
-    L.marker([{{ lake.latitude }}, {{ lake.longitude }}])
-        .addTo(map)
-        .bindPopup('{{ lake.name }}')
-        .openPopup();
-});
-</script>
+{% block external_js %}{% endblock %}
+
+{% block extra_js %}
+
+<style>
+.facility-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.facility-item i {
+    font-size: 1.2rem;
+}
+
+.rules-content {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+</style>
 {% endblock %}
 
 {% endblock %}

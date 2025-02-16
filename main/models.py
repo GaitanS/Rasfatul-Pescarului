@@ -139,8 +139,8 @@ class Lake(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     address = models.CharField(max_length=255)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     fish_types = models.CharField(max_length=255, default='Diverse')
     facilities = models.CharField(max_length=255, default='')
     rules = models.TextField(default='')
@@ -247,13 +247,18 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, blank=True)
     county = models.ForeignKey(County, on_delete=models.SET_NULL, null=True, blank=True)
     postal_code = models.CharField(max_length=10, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', default='images/logo.png', null=True, blank=True)
     is_email_verified = models.BooleanField(default=False)
     newsletter = models.BooleanField(default=True)
     order_updates = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.email
+
+    def get_avatar_url(self):
+        if self.avatar and hasattr(self.avatar, 'url'):
+            return self.avatar.url
+        return '/static/images/logo.png'
 
 class SiteSettings(models.Model):
     site_name = models.CharField(max_length=100, default='Răsfățul Pescarului')
