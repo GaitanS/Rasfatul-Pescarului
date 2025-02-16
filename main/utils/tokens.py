@@ -1,13 +1,19 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import six
 
-class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
+class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
-        # Include user's profile.is_email_verified status in the token hash
-        # This ensures the token becomes invalid once email is verified
         return (
             six.text_type(user.pk) + six.text_type(timestamp) +
-            six.text_type(user.profile.is_email_verified)
+            six.text_type(user.is_active)
         )
 
-email_verification_token = EmailVerificationTokenGenerator()
+class CustomPasswordResetTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            six.text_type(user.pk) + six.text_type(timestamp) +
+            six.text_type(user.password)
+        )
+
+account_activation_token = AccountActivationTokenGenerator()
+password_reset_token = CustomPasswordResetTokenGenerator()

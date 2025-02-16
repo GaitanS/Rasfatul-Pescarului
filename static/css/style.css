@@ -12,9 +12,14 @@ body {
 
 /* Navbar Styles */
 .navbar {
-    background-color: white;
+    background-color: transparent;
     transition: all 0.3s ease;
     padding: 1rem 0;
+    flex-direction: row;
+}
+
+.navbar.scrolled {
+    background-color: rgb(255, 255, 255);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -32,15 +37,17 @@ body {
 }
 
 .nav-link {
-    color: var(--dark-color) !important;
-    font-weight: 500;
+    color: #555 !important;
+    font-weight: 600;
     padding: 0.5rem 1rem;
     transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-    color: var(--primary-color) !important;
-    transform: translateY(-2px);
+    background-color: var(--primary-color);
+    color: white !important;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
 .nav-link.active {
@@ -50,18 +57,31 @@ body {
 .navbar-toggler {
     border: none;
     padding: 0.5rem;
+    margin: 0 auto;
 }
 
-.navbar-spacer {
-    height: 76px; /* Adjust based on navbar height */
+@media (max-width: 768px) {
+    .navbar {
+        position: static !important;
+    }
+
+    .navbar-toggler {
+        margin: 0 auto;
+    }
+
+    .navbar-brand {
+        margin: 0 auto;
+        text-align: center;
+        width: 100%;
+    }
 }
 
 /* Hero Section */
 .hero-section {
     position: relative;
-    height: 100vh;
-    min-height: 600px;
+    height: 90vh;
     display: flex;
+    justify-content: center;
     align-items: center;
     overflow: hidden;
 }
@@ -72,13 +92,14 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -2;
+    z-index: 1;
 }
 
 .hero-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0.8;
 }
 
 .hero-overlay {
@@ -87,23 +108,96 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
-    z-index: -1;
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+    z-index: 2;
 }
 
 .hero-text {
-    color: white;
+    position: relative;
+    z-index: 3;
     text-align: center;
+    color: white;
+    padding: 20px;
     max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
 }
 
 .hero-text h1 {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-text p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hero-text .btn-success {
+    font-size: 1.2rem;
+    padding: 1rem 2.5rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.hero-text .btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Waves Animation */
+.waves-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 15vh;
+    overflow: hidden;
+    z-index: 4;
+}
+
+.waves {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 20px;
+    max-height: 300px;
+}
+
+.parallax > use {
+    animation: move-waves 25s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+
+.parallax > use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 7s;
+}
+
+.parallax > use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 10s;
+}
+
+.parallax > use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 13s;
+}
+
+.parallax > use:nth-child(4) {
+    animation-delay: -5s;
+    animation-duration: 20s;
+}
+
+@keyframes move-waves {
+    0% {
+        transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+        transform: translate3d(85px, 0, 0);
+    }
 }
 
 /* Welcome Section */

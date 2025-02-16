@@ -44,8 +44,8 @@ class PaymentProcessor:
                     'quantity': 1,
                 })
 
-            # Set expiration time to 30 minutes from now
-            expires_at = int(time.time()) + (30 * 60)
+            # Set expiration time to 3 minutes from now
+            expires_at = int(time.time()) + (3 * 60)
 
             # Create checkout session
             session = stripe.checkout.Session.create(

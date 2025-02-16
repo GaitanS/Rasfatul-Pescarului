@@ -4,27 +4,75 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
+    <div class="hero-image">
+        <img src="{% static 'images/hero.png' %}" alt="Hero Background">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-text">
+        <h1>Bine ai venit la Răsfățul Pescarului</h1>
+        <p>Descoperă cele mai bune locuri de pescuit și echipamente de calitate pentru pasiunea ta!</p>
+        <a href="{% url 'main:register' %}" class="btn btn-success btn-lg">
+            Alăturați-vă clubului
+        </a>
+    </div>
+
+    <!-- Valuri animate -->
+    <div class="waves-container">
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave"
+                      d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"></path>
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(222, 244, 252,0.7)"></use>
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(222, 244, 252,0.5)"></use>
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(222, 244, 252,0.3)"></use>
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff"></use>
+            </g>
+        </svg>
+    </div>
+</section>
+
+<!-- Welcome Section -->
+<section class="welcome-section">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 mb-4">Bine ai venit la Răsfățul Pescarului</h1>
-                <p class="lead mb-4">Descoperă cele mai bune locuri de pescuit și echipamente de calitate pentru pasiunea ta!</p>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                    <a href="{% url 'main:shop' %}" class="btn btn-success btn-lg px-4 me-md-2">
-                        <i class="fas fa-shopping-cart me-2"></i>Magazin
-                    </a>
-                    <a href="{% url 'main:fishing_locations' %}" class="btn btn-outline-success btn-lg px-4">
-                        <i class="fas fa-map-marker-alt me-2"></i>Bălți de pescuit
-                    </a>
-                </div>
+            <div class="col-lg-5 image-container">
+                <img src="{% static 'images/logo.png' %}" alt="Răsfățul Pescarului Logo" class="img-fluid">
             </div>
-            <div class="col-lg-6">
-                <img src="{% static 'images/hero.png' %}" alt="Hero Image" class="img-fluid">
+            <div class="col-lg-7 text-container">
+                <h2>Bine ați venit pe Răsfățul Pescarului</h2>
+                <p class="lead">Platforma dedicată pasionaților de pescuit din toată țara! Aici, veți descoperi o resursă unică pentru iubitorii de pescuit: un serviciu inovator care vă permite să explorați toate speciile de pești și baltițele din România.</p>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Explore Section -->
+<section class="fishing-explore-section">
+    <div class="container">
+        <div class="fishing-explore-container">
+            <div class="fishing-text-content">
+                <h2>Explorați cu noi<br>lumea captivantă<br>a pescuitului.</h2>
+                <p class="mt-4">Fie că sunteți în căutarea unui loc de pescuit perfect sau doriți să aflați mai multe despre speciile de pești din apele noastre, Răsfățul Pescarului vă oferă toate informațiile necesare pentru a vă planifica o experiență de pescuit de neuitat. Alăturați-vă comunității noastre și începeți aventura pe ape!</p>
+            </div>
+            <div class="fishing-image-container">
+                <img src="{% static 'images/img_4.png' %}" alt="Peisaj de pescuit" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Call to Action -->
+<section class="cta py-5 bg-success text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Pregătit să începi aventura?</h2>
+        <p class="lead mb-4">Alătură-te comunității noastre și descoperă cele mai bune locuri de pescuit!</p>
+        <a href="{% url 'main:register' %}" class="btn btn-light btn-lg">
+            Creează cont gratuit
+        </a>
+    </div>
+</section>
 <!-- Featured Products -->
 <section class="featured-products py-5">
     <div class="container">
@@ -127,17 +175,6 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-</section>
-
-<!-- Call to Action -->
-<section class="cta py-5 bg-success text-white">
-    <div class="container text-center">
-        <h2 class="mb-4">Pregătit să începi aventura?</h2>
-        <p class="lead mb-4">Alătură-te comunității noastre și descoperă cele mai bune locuri de pescuit!</p>
-        <a href="{% url 'main:register' %}" class="btn btn-light btn-lg">
-            Creează cont gratuit
-        </a>
     </div>
 </section>
 {% endblock %}

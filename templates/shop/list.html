@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load main_extras %}
+{% load compress %}
 
 {% block title %}Magazin - Răsfățul Pescarului{% endblock %}
+
+{% block external_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css">
+{% endblock %}
 
 {% block content %}
 <div class="container py-5 mt-5">
@@ -10,163 +15,155 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'main:home' %}">Acasă</a></li>
-            <li class="breadcrumb-item active" aria-current="page">
-                {% if category %}
-                {{ category.name }}
-                {% else %}
-                Magazin
-                {% endif %}
-            </li>
+            <li class="breadcrumb-item active" aria-current="page">Magazin</li>
         </ol>
     </nav>
 
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-lg-3">
-            <!-- Search -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Caută</h5>
-                    <form action="{% url 'main:shop' %}" method="get">
+        <div class="col-lg-3" id="filterSidebar">
+            <!-- Filter Form -->
+            <form id="filterForm" class="mb-4">
+                {% csrf_token %}
+                
+                <!-- Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Caută</h5>
                         <div class="input-group">
-                            <input type="text" class="form-control" name="q" 
-                                   placeholder="Caută produse..." value="{{ search_query|default:'' }}">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Caută produse..." value="{{ request.GET.search }}">
                             <button class="btn btn-outline-success" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Categories -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Categorii</h5>
-                    <div class="list-group list-group-flush">
-                        <a href="{% url 'main:shop' %}" 
-                           class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
-                            Toate produsele
-                        </a>
-                        {% for cat in categories %}
-                        <a href="{% url 'main:shop_category' cat.slug %}" 
-                           class="list-group-item list-group-item-action {% if category.id == cat.id %}active{% endif %}">
-                            {{ cat.name }}
-                        </a>
-                        {% endfor %}
                     </div>
                 </div>
-            </div>
+
+                <!-- Categories -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Categorii</h5>
+                        <div class="list-group list-group-flush">
+                            <label class="list-group-item">
+                                <input type="radio" name="category" value="" class="form-check-input me-2"
+                                       {% if not request.GET.category %}checked{% endif %}>
+                                Toate produsele
+                            </label>
+                            {% for cat in categories %}
+                            <label class="list-group-item">
+                                <input type="radio" name="category" value="{{ cat.slug }}" class="form-check-input me-2"
+                                       {% if request.GET.category == cat.slug %}checked{% endif %}>
+                                {{ cat.name }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Preț</h5>
+                        <div id="priceRange" class="mb-3"></div>
+                        <p id="priceRangeLabel" class="text-center mb-0"></p>
+                        <input type="hidden" id="minPrice" name="min_price" data-min="0">
+                        <input type="hidden" id="maxPrice" name="max_price" data-max="1000">
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Brand</h5>
+                        <div id="brandFilter">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attribute Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Filtre</h5>
+                        
+                        <!-- Stock Filter -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="inStock" name="in_stock" value="true"
+                                       {% if request.GET.in_stock %}checked{% endif %}>
+                                <label class="form-check-label" for="inStock">
+                                    Doar produse în stoc
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Rating minim</label>
+                            <select class="form-select" name="rating">
+                                <option value="">Toate</option>
+                                {% for i in "54321"|make_list %}
+                                <option value="{{ i }}" {% if request.GET.rating == i %}selected{% endif %}>
+                                    {{ i }}+ stele
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Attribute Filters -->
+                        <div id="colorFilter" class="mb-3">
+                            <h6>Culoare</h6>
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <div id="sizeFilter" class="mb-3">
+                            <h6>Mărime</h6>
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <div id="materialFilter" class="mb-3">
+                            <h6>Material</h6>
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
 
         <!-- Products Grid -->
         <div class="col-lg-9">
-            <!-- Results info -->
+            <!-- Results Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    {% if search_query %}
-                    <h4>Rezultate pentru "{{ search_query }}"</h4>
-                    {% elif category %}
-                    <h4>{{ category.name }}</h4>
-                    {% else %}
-                    <h4>Toate produsele</h4>
-                    {% endif %}
+                    <h4 id="resultsTitle">Toate produsele</h4>
                 </div>
-                <div class="text-muted">
-                    {{ products.paginator.count }} produse găsite
+                <div class="d-flex align-items-center">
+                    <select id="sortSelect" class="form-select me-2" style="width: auto;">
+                        <option value="-created_at">Cele mai noi</option>
+                        <option value="price">Preț crescător</option>
+                        <option value="-price">Preț descrescător</option>
+                        <option value="-average_rating">Cele mai bine evaluate</option>
+                        <option value="-sales_count">Cele mai vândute</option>
+                    </select>
+                    <div class="text-muted" id="resultsCount"></div>
                 </div>
             </div>
 
-            <!-- Products -->
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for product in products %}
-                <div class="col">
-                    <div class="card h-100">
-                        <!-- Product Image -->
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                        <img src="{% static 'images/product-placeholder.png' %}" class="card-img-top" alt="{{ product.name }}">
-                        {% endif %}
-                        
-                        <div class="card-body">
-                            <!-- Product Name -->
-                            <h5 class="card-title">{{ product.name }}</h5>
-                            
-                            <!-- Price -->
-                            <p class="card-text text-success fw-bold mb-2">{{ product.price }} Lei</p>
-                            
-                            <!-- Stock Status -->
-                            {% if product.stock_quantity > 0 %}
-                            <span class="badge bg-success mb-2">În stoc</span>
-                            {% else %}
-                            <span class="badge bg-danger mb-2">Stoc epuizat</span>
-                            {% endif %}
-                            
-                            <!-- Description -->
-                            <p class="card-text text-muted small">
-                                {{ product.description|truncatechars:100 }}
-                            </p>
-                            
-                            <!-- Actions -->
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'main:product_detail' product.slug %}" 
-                                   class="btn btn-outline-success">
-                                    Vezi detalii
-                                </a>
-                                {% if product.stock_quantity > 0 %}
-                                <form method="post" action="{% url 'main:add_to_cart' %}" class="d-grid">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-shopping-cart me-2"></i>Adaugă în coș
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center" style="display: none;">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Se încarcă...</span>
                 </div>
-                {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        Nu am găsit niciun produs care să corespundă criteriilor tale de căutare.
-                    </div>
-                </div>
-                {% endfor %}
+            </div>
+
+            <!-- Products Grid -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="productsGrid">
+                <!-- Populated by JavaScript -->
             </div>
 
             <!-- Pagination -->
-            {% if products.paginator.num_pages > 1 %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if products.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </li>
-                    {% endif %}
-
-                    {% for i in products.paginator.page_range %}
-                    <li class="page-item {% if products.number == i %}active{% endif %}">
-                        <a class="page-link" href="?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                            {{ i }}
-                        </a>
-                    </li>
-                    {% endfor %}
-
-                    {% if products.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
+            <div id="pagination" class="mt-4"></div>
         </div>
     </div>
 </div>
@@ -182,4 +179,17 @@
         <div class="toast-body"></div>
     </div>
 </div>
+
+<!-- Mobile Filter Toggle -->
+<button id="filterToggle" class="btn btn-success rounded-circle position-fixed d-lg-none"
+        style="bottom: 20px; right: 20px; z-index: 1000;">
+    <i class="fas fa-filter"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
+{% compress js %}
+<script src="{% static 'js/shop.js' %}"></script>
+{% endcompress %}
 {% endblock %}

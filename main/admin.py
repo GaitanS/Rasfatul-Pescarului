@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.db.models import Avg
 from .models import (
     Category, Product, County, Lake, Video, 
     Testimonial, Order, OrderItem, Profile, 
-    SiteSettings, Payment
+    SiteSettings, Payment, Brand, ProductAttribute,
+    ProductAttributeValue, ProductReview
 )
 
 @admin.register(SiteSettings)
@@ -20,18 +22,77 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'created_at')
+    list_display = ('name', 'parent', 'is_active', 'created_at')
+    list_filter = ('is_active', 'parent')
+    search_fields = ('name', 'description')
+    prepopulated_fields = {'slug': ('name',)}
+    raw_id_fields = ('parent',)
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
 
+@admin.register(ProductAttribute)
+class ProductAttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'type', 'is_filterable')
+    list_filter = ('type', 'is_filterable')
+    search_fields = ('name',)
+
+class ProductAttributeValueInline(admin.TabularInline):
+    model = ProductAttributeValue
+    extra = 1
+
+class ProductReviewInline(admin.TabularInline):
+    model = ProductReview
+    extra = 0
+    readonly_fields = ('created_at',)
+    can_delete = False
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'stock_quantity', 'is_featured', 'is_active')
-    list_filter = ('category', 'is_featured', 'is_active')
-    search_fields = ('name', 'description')
+    list_display = ('name', 'category', 'brand', 'price', 'stock_quantity', 
+                   'average_rating', 'views_count', 'sales_count', 'is_featured', 'is_active')
+    list_filter = ('category', 'brand', 'is_featured', 'is_active')
+    search_fields = ('name', 'description', 'brand__name')
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ('price', 'stock_quantity', 'is_featured', 'is_active')
+    inlines = [ProductAttributeValueInline, ProductReviewInline]
+    readonly_fields = ('views_count', 'sales_count', 'average_rating')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'slug', 'description', 'image')
+        }),
+        ('Categorization', {
+            'fields': ('category', 'brand')
+        }),
+        ('Pricing & Stock', {
+            'fields': ('price', 'stock_quantity')
+        }),
+        ('Visibility', {
+            'fields': ('is_featured', 'is_active')
+        }),
+        ('Statistics', {
+            'fields': ('views_count', 'sales_count', 'average_rating'),
+            'classes': ('collapse',)
+        })
+    )
+
+@admin.register(ProductReview)
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = ('product', 'user', 'rating', 'is_approved', 'created_at')
+    list_filter = ('rating', 'is_approved', 'created_at')
+    search_fields = ('product__name', 'user__email', 'comment')
+    raw_id_fields = ('product', 'user')
+    actions = ['approve_reviews']
+
+    def approve_reviews(self, request, queryset):
+        queryset.update(is_approved=True)
+        for review in queryset:
+            review.product.update_rating()
+    approve_reviews.short_description = "Aprobă review-urile selectate"
 
 @admin.register(County)
 class CountyAdmin(admin.ModelAdmin):

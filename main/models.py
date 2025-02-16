@@ -8,6 +8,7 @@ class Category(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -17,7 +18,42 @@ class Category(models.Model):
         ordering = ['name']
 
     def __str__(self):
+        if self.parent:
+            return f"{self.parent.name} > {self.name}"
         return self.name
+
+    def get_all_children(self):
+        """Returnează toate subcategoriile recursiv"""
+        children = list(self.children.all())
+        for child in self.children.all():
+            children.extend(child.get_all_children())
+        return children
+
+class Brand(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='brands/', null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+class ProductAttribute(models.Model):
+    ATTRIBUTE_TYPES = (
+        ('color', 'Culoare'),
+        ('size', 'Mărime'),
+        ('material', 'Material'),
+        ('weight', 'Greutate'),
+        ('other', 'Altele'),
+    )
+    
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=20, choices=ATTRIBUTE_TYPES)
+    is_filterable = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.get_type_display()}: {self.name}"
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
@@ -29,14 +65,61 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    attributes = models.ManyToManyField(ProductAttribute, through='ProductAttributeValue')
+    views_count = models.PositiveIntegerField(default=0)
+    sales_count = models.PositiveIntegerField(default=0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['category', 'brand', 'is_active']),
+            models.Index(fields=['price', 'stock_quantity']),
+            models.Index(fields=['average_rating', 'sales_count']),
+        ]
 
     def __str__(self):
         return self.name
+
+    def update_rating(self):
+        """Actualizează rating-ul mediu al produsului"""
+        avg = self.reviews.filter(is_approved=True).aggregate(models.Avg('rating'))['rating__avg']
+        self.average_rating = avg or 0
+        self.save()
+
+class ProductAttributeValue(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attribute_values')
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+    value = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('product', 'attribute')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.attribute.name}: {self.value}"
+
+class ProductReview(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField()
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('product', 'user')
+
+    def __str__(self):
+        return f"Review for {self.product.name} by {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.product.update_rating()
 
 class County(models.Model):
     name = models.CharField(max_length=100)

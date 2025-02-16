@@ -1,6 +1,17 @@
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+from django.urls import reverse
+from .tokens import account_activation_token, password_reset_token
+import logging
+
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.conf import settings
 from django.urls import reverse
 import logging
@@ -107,4 +118,104 @@ def send_order_status_update(order):
             )
     except Exception as e:
         logger.error(f'Error sending order status update email for order #{order.id}: {str(e)}')
+
+
+def send_verification_email(request, user):
+    """Send account verification email"""
+    try:
+        token = account_activation_token.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        verification_url = reverse('main:verify_email', kwargs={'uidb64': uid, 'token': token})
+        absolute_url = request.build_absolute_uri(verification_url)
+        
+        send_email(
+            to_email=user.email,
+            subject='Verifică adresa de email',
+            template='emails/verify_email.html',
+            context={
+                'user': user,
+                'verification_url': absolute_url
+            }
+        )
+    except Exception as e:
+        logger.error(f'Error sending verification email to {user.email}: {str(e)}')
+        raise
+
+def send_password_reset_email(request, user):
+    """Send password reset email"""
+    try:
+        token = password_reset_token.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = reverse('main:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+        absolute_url = request.build_absolute_uri(reset_url)
+        
+        send_email(
+            to_email=user.email,
+            subject='Resetare parolă',
+            template='emails/password_reset.html',
+            context={
+                'user': user,
+                'reset_url': absolute_url
+            }
+        )
+    except Exception as e:
+        logger.error(f'Error sending password reset email to {user.email}: {str(e)}')
+        raise
+
+def send_contact_confirmation_email(email, name):
+    """Send contact form confirmation email"""
+    try:
+        send_email(
+            to_email=email,
+            subject='Am primit mesajul tău',
+            template='emails/contact_confirmation.html',
+            context={'name': name}
+        )
+    except Exception as e:
+        logger.error(f'Error sending contact confirmation email to {email}: {str(e)}')
+        raise
+
+def send_contact_admin_email(name, email, message):
+    """Send contact form notification to admin"""
+    try:
+        send_email(
+            to_email=settings.ADMIN_EMAIL,
+            subject='Nou mesaj de contact',
+            template='emails/contact_admin.html',
+            context={
+                'name': name,
+                'email': email,
+                'message': message
+            }
+        )
+    except Exception as e:
+        logger.error(f'Error sending contact admin email: {str(e)}')
+        raise
+
+def send_order_cancelled_email(request, order):
+    """Send order cancellation email to customer"""
+    try:
+        send_email(
+            to_email=order.email,
+            subject=f'Comandă anulată #{order.id}',
+            template='emails/order_cancelled.html',
+            context={'order': order}
+        )
+    except Exception as e:
+        logger.error(f'Error sending order cancelled email for order #{order.id}: {str(e)}')
+        raise
+
+def send_order_cancelled_admin_email(order):
+    """Send order cancellation notification to admin"""
+    try:
+        send_email(
+            to_email=settings.ADMIN_EMAIL,
+            subject=f'Comandă anulată #{order.id}',
+            template='emails/order_cancelled_admin.html',
+            context={'order': order}
+        )
+    except Exception as e:
+        logger.error(f'Error sending order cancelled admin email for order #{order.id}: {str(e)}')
+        raise
+
         raise

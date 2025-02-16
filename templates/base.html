@@ -1,4 +1,5 @@
 {% load static %}
+{% load compress %}
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -18,8 +19,14 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS -->
+    {% block external_css %}{% endblock %}
+    
+    <!-- Compressed CSS -->
+    {% compress css %}
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/shop.css' %}" rel="stylesheet">
+    {% block compressed_css %}{% endblock %}
+    {% endcompress %}
     
     {% block styles %}{% endblock %}
 </head>
@@ -38,8 +45,11 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- Custom JavaScript -->
+    <!-- Compressed JavaScript -->
+    {% compress js %}
     <script src="{% static 'js/script.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    {% endcompress %}
     
     {% block scripts %}{% endblock %}
 </body>

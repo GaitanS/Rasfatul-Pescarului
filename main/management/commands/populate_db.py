@@ -1,7 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from main.models import Category, Product, County, Lake, Video, Testimonial
+from django.utils.text import slugify
+from main.models import (
+    Category, Product, County, Lake, Video, Testimonial,
+    Brand, ProductAttribute, ProductAttributeValue, ProductReview
+)
 from decimal import Decimal
+import random
 
 class Command(BaseCommand):
     help = 'Populate database with sample data'
@@ -9,161 +14,186 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write('Creating sample data...')
 
-        # Create categories
-        categories = [
+        # Create brands
+        brands = [
+            {'name': 'Shimano', 'description': 'Lider mondial în echipamente de pescuit'},
+            {'name': 'Daiwa', 'description': 'Calitate japoneză pentru pescari pretențioși'},
+            {'name': 'Carp Expert', 'description': 'Specialiști în pescuitul la crap'},
+            {'name': 'Maver', 'description': 'Echipamente premium pentru pescuit sportiv'},
+            {'name': 'Trabucco', 'description': 'Tradiție și inovație în pescuit'}
+        ]
+
+        for brand_data in brands:
+            brand, created = Brand.objects.get_or_create(
+                name=brand_data['name'],
+                defaults={
+                    'description': brand_data['description'],
+                    'slug': slugify(brand_data['name'])
+                }
+            )
+            self.stdout.write(f'Created brand: {brand.name}')
+
+        # Create product attributes
+        attributes = [
+            {'name': 'Lungime', 'type': 'size', 'values': ['3.60m', '3.90m', '4.20m']},
+            {'name': 'Putere lansare', 'type': 'weight', 'values': ['50-100g', '100-150g', '150-200g']},
+            {'name': 'Culoare', 'type': 'color', 'values': ['Negru', 'Verde', 'Camuflaj']},
+            {'name': 'Material', 'type': 'material', 'values': ['Carbon', 'Fibră de sticlă', 'Compozit']},
+            {'name': 'Mărime', 'type': 'size', 'values': ['S', 'M', 'L', 'XL', 'XXL']}
+        ]
+
+        for attr_data in attributes:
+            attr, created = ProductAttribute.objects.get_or_create(
+                name=attr_data['name'],
+                defaults={'type': attr_data['type'], 'is_filterable': True}
+            )
+            self.stdout.write(f'Created attribute: {attr.name}')
+
+        # Create categories with parent-child relationships
+        main_categories = [
             {
                 'name': 'Lansete',
-                'description': 'Lansete profesionale pentru pescuit'
+                'description': 'Lansete profesionale pentru pescuit',
+                'subcategories': [
+                    {'name': 'Lansete crap', 'description': 'Lansete specializate pentru crap'},
+                    {'name': 'Lansete feeder', 'description': 'Lansete pentru pescuit la feeder'},
+                    {'name': 'Lansete spinning', 'description': 'Lansete pentru pescuit la răpitor'}
+                ]
             },
             {
                 'name': 'Mulinete',
-                'description': 'Mulinete de calitate superioară'
-            },
-            {
-                'name': 'Momeli',
-                'description': 'Momeli naturale și artificiale'
-            },
-            {
-                'name': 'Accesorii',
-                'description': 'Accesorii pentru pescuit'
-            },
-            {
-                'name': 'Îmbrăcăminte',
-                'description': 'Îmbrăcăminte pentru pescuit'
-            },
-            {
-                'name': 'Echipament camping',
-                'description': 'Echipament pentru camping'
+                'description': 'Mulinete de calitate superioară',
+                'subcategories': [
+                    {'name': 'Mulinete crap', 'description': 'Mulinete pentru pescuit la crap'},
+                    {'name': 'Mulinete feeder', 'description': 'Mulinete pentru pescuit la feeder'},
+                    {'name': 'Mulinete spinning', 'description': 'Mulinete pentru pescuit la răpitor'}
+                ]
             }
         ]
 
-        for cat_data in categories:
-            category, created = Category.objects.get_or_create(
+        for cat_data in main_categories:
+            parent, created = Category.objects.get_or_create(
                 name=cat_data['name'],
-                defaults={'description': cat_data['description']}
+                defaults={
+                    'description': cat_data['description'],
+                    'slug': slugify(cat_data['name'])
+                }
             )
-            self.stdout.write(f'Created category: {category.name}')
+            self.stdout.write(f'Created parent category: {parent.name}')
 
-        # Create products
+            for subcat_data in cat_data['subcategories']:
+                child, created = Category.objects.get_or_create(
+                    name=subcat_data['name'],
+                    defaults={
+                        'description': subcat_data['description'],
+                        'parent': parent,
+                        'slug': slugify(subcat_data['name'])
+                    }
+                )
+                self.stdout.write(f'Created child category: {child.name}')
+
+        # Create products with attributes and reviews
         products = [
             {
                 'name': 'Lansetă Carbon Pro',
-                'category': 'Lansete',
+                'category': 'Lansete crap',
+                'brand': 'Shimano',
                 'description': 'Lansetă profesională din carbon',
                 'price': Decimal('299.99'),
                 'stock_quantity': 10,
-                'is_featured': True
+                'is_featured': True,
+                'attributes': {
+                    'Lungime': '3.90m',
+                    'Putere lansare': '100-150g',
+                    'Culoare': 'Negru',
+                    'Material': 'Carbon'
+                }
             },
             {
-                'name': 'Mulinetă Shimano XT',
-                'category': 'Mulinete',
-                'description': 'Mulinetă de înaltă calitate',
+                'name': 'Mulinetă Big Pit',
+                'category': 'Mulinete crap',
+                'brand': 'Daiwa',
+                'description': 'Mulinetă de înaltă performanță',
                 'price': Decimal('449.99'),
                 'stock_quantity': 5,
-                'is_featured': True
-            },
-            {
-                'name': 'Set momeli artificiale',
-                'category': 'Momeli',
-                'description': 'Set de 10 momeli artificiale',
-                'price': Decimal('99.99'),
-                'stock_quantity': 20,
-                'is_featured': False
-            },
-            {
-                'name': 'Cort 2 persoane',
-                'category': 'Echipament camping',
-                'description': 'Cort impermeabil, perfect pentru sesiuni lungi de pescuit',
-                'price': Decimal('399.99'),
-                'stock_quantity': 8,
-                'is_featured': True
-            },
-            {
-                'name': 'Scaun pescar deluxe',
-                'category': 'Accesorii',
-                'description': 'Scaun confortabil cu suport pentru băutură și undiță',
-                'price': Decimal('199.99'),
-                'stock_quantity': 15,
-                'is_featured': True
-            },
-            {
-                'name': 'Geacă impermeabilă',
-                'category': 'Îmbrăcăminte',
-                'description': 'Geacă impermeabilă și călduroasă pentru pescuit în orice sezon',
-                'price': Decimal('249.99'),
-                'stock_quantity': 12,
-                'is_featured': False
+                'is_featured': True,
+                'attributes': {
+                    'Culoare': 'Negru',
+                    'Material': 'Carbon'
+                }
             }
         ]
 
+        # Create a test user for reviews
+        user, created = User.objects.get_or_create(
+            username='test_user',
+            defaults={
+                'email': 'test@example.com',
+                'first_name': 'Test',
+                'last_name': 'User'
+            }
+        )
+        if created:
+            user.set_password('test123')
+            user.save()
+
         for prod_data in products:
             category = Category.objects.get(name=prod_data['category'])
+            brand = Brand.objects.get(name=prod_data['brand'])
+            
             product, created = Product.objects.get_or_create(
                 name=prod_data['name'],
                 defaults={
                     'category': category,
+                    'brand': brand,
                     'description': prod_data['description'],
                     'price': prod_data['price'],
                     'stock_quantity': prod_data['stock_quantity'],
-                    'is_featured': prod_data['is_featured']
+                    'is_featured': prod_data['is_featured'],
+                    'slug': slugify(prod_data['name'])
                 }
             )
-            self.stdout.write(f'Created product: {product.name}')
 
-        # Create counties
+            # Add attributes
+            for attr_name, value in prod_data['attributes'].items():
+                attribute = ProductAttribute.objects.get(name=attr_name)
+                ProductAttributeValue.objects.get_or_create(
+                    product=product,
+                    attribute=attribute,
+                    defaults={'value': value}
+                )
+
+            # Add reviews
+            for i in range(3):
+                review, created = ProductReview.objects.get_or_create(
+                    product=product,
+                    user=user,
+                    defaults={
+                        'rating': random.randint(4, 5),
+                        'comment': f'Review {i+1} pentru {product.name}',
+                        'is_approved': True
+                    }
+                )
+
+            self.stdout.write(f'Created product with attributes and reviews: {product.name}')
+
+        # Create counties and lakes (existing code)
         counties = [
-            {'name': 'Alba', 'region': 'Transilvania'},
-            {'name': 'Arad', 'region': 'Crișana'},
-            {'name': 'Argeș', 'region': 'Muntenia'},
-            {'name': 'Bacău', 'region': 'Moldova'},
-            {'name': 'Bihor', 'region': 'Crișana'},
-            {'name': 'Bistrița-Năsăud', 'region': 'Transilvania'},
-            {'name': 'Botoșani', 'region': 'Moldova'},
-            {'name': 'Brăila', 'region': 'Muntenia'},
-            {'name': 'Brașov', 'region': 'Transilvania'},
             {'name': 'București', 'region': 'București-Ilfov'},
-            {'name': 'Buzău', 'region': 'Muntenia'},
-            {'name': 'Călărași', 'region': 'Muntenia'},
-            {'name': 'Caraș-Severin', 'region': 'Banat'},
-            {'name': 'Cluj', 'region': 'Transilvania'},
-            {'name': 'Constanța', 'region': 'Dobrogea'},
-            {'name': 'Covasna', 'region': 'Transilvania'},
-            {'name': 'Dâmbovița', 'region': 'Muntenia'},
-            {'name': 'Dolj', 'region': 'Oltenia'},
-            {'name': 'Galați', 'region': 'Moldova'},
-            {'name': 'Giurgiu', 'region': 'Muntenia'},
-            {'name': 'Gorj', 'region': 'Oltenia'},
-            {'name': 'Harghita', 'region': 'Transilvania'},
-            {'name': 'Hunedoara', 'region': 'Transilvania'},
-            {'name': 'Ialomița', 'region': 'Muntenia'},
-            {'name': 'Iași', 'region': 'Moldova'},
             {'name': 'Ilfov', 'region': 'București-Ilfov'},
-            {'name': 'Maramureș', 'region': 'Transilvania'},
-            {'name': 'Mehedinți', 'region': 'Oltenia'},
-            {'name': 'Mureș', 'region': 'Transilvania'},
-            {'name': 'Neamț', 'region': 'Moldova'},
-            {'name': 'Olt', 'region': 'Oltenia'},
-            {'name': 'Prahova', 'region': 'Muntenia'},
-            {'name': 'Sălaj', 'region': 'Transilvania'},
-            {'name': 'Satu Mare', 'region': 'Transilvania'},
-            {'name': 'Sibiu', 'region': 'Transilvania'},
-            {'name': 'Suceava', 'region': 'Moldova'},
-            {'name': 'Teleorman', 'region': 'Muntenia'},
-            {'name': 'Timiș', 'region': 'Banat'},
-            {'name': 'Tulcea', 'region': 'Dobrogea'},
-            {'name': 'Vâlcea', 'region': 'Oltenia'},
-            {'name': 'Vaslui', 'region': 'Moldova'},
-            {'name': 'Vrancea', 'region': 'Moldova'}
+            {'name': 'Cluj', 'region': 'Transilvania'}
         ]
 
         for county_data in counties:
             county, created = County.objects.get_or_create(
                 name=county_data['name'],
-                defaults={'region': county_data['region']}
+                defaults={
+                    'region': county_data['region'],
+                    'slug': slugify(county_data['name'])
+                }
             )
             self.stdout.write(f'Created county: {county.name}')
 
-        # Create lakes
         lakes = [
             {
                 'name': 'Lacul Morii',
@@ -176,18 +206,6 @@ class Command(BaseCommand):
                 'facilities': 'parcare,toalete,chioșc',
                 'rules': 'Pescuitul permis între orele 6:00-22:00',
                 'price_per_day': Decimal('50.00')
-            },
-            {
-                'name': 'Balta Corbu',
-                'county': 'Constanța',
-                'description': 'Complex de bălți amenajate pentru pescuit sportiv',
-                'address': 'Comuna Corbu, Constanța',
-                'latitude': Decimal('44.3778'),
-                'longitude': Decimal('28.6447'),
-                'fish_types': 'crap,caras,știucă',
-                'facilities': 'parcare,cazare,restaurant',
-                'rules': 'Pescuit catch & release obligatoriu',
-                'price_per_day': Decimal('80.00')
             }
         ]
 
@@ -208,76 +226,5 @@ class Command(BaseCommand):
                 }
             )
             self.stdout.write(f'Created lake: {lake.name}')
-
-        # Create videos
-        videos = [
-            {
-                'title': 'Tehnici de pescuit la crap',
-                'category': 'Lansete',
-                'description': 'Învață cele mai eficiente tehnici de pescuit la crap',
-                'embed_url': 'https://www.youtube.com/embed/abc123',
-                'is_featured': True
-            },
-            {
-                'title': 'Cum să alegi mulineta potrivită',
-                'category': 'Mulinete',
-                'description': 'Ghid complet pentru alegerea mulinetei perfecte',
-                'embed_url': 'https://www.youtube.com/embed/def456',
-                'is_featured': True
-            },
-            {
-                'title': 'Pescuit la răpitor',
-                'category': 'Momeli',
-                'description': 'Sfaturi pentru pescuitul la știucă și șalău',
-                'embed_url': 'https://www.youtube.com/embed/ghi789',
-                'is_featured': True
-            }
-        ]
-
-        for video_data in videos:
-            category = Category.objects.get(name=video_data['category'])
-            video, created = Video.objects.get_or_create(
-                title=video_data['title'],
-                defaults={
-                    'category': category,
-                    'description': video_data['description'],
-                    'embed_url': video_data['embed_url'],
-                    'is_featured': video_data['is_featured']
-                }
-            )
-            self.stdout.write(f'Created video: {video.title}')
-
-        # Create testimonials
-        testimonials = [
-            {
-                'name': 'Ioan Popescu',
-                'content': 'Cel mai bun magazin de pescuit! Produse de calitate și livrare rapidă.',
-                'rating': 5,
-                'is_active': True
-            },
-            {
-                'name': 'Andrei Popa',
-                'content': 'Recomand cu încredere! Echipa foarte amabilă și profesionistă.',
-                'rating': 5,
-                'is_active': True
-            },
-            {
-                'name': 'Maria Ionescu',
-                'content': 'Am găsit tot ce aveam nevoie pentru pescuit. Prețuri foarte bune!',
-                'rating': 4,
-                'is_active': True
-            }
-        ]
-
-        for testimonial_data in testimonials:
-            testimonial, created = Testimonial.objects.get_or_create(
-                name=testimonial_data['name'],
-                defaults={
-                    'content': testimonial_data['content'],
-                    'rating': testimonial_data['rating'],
-                    'is_active': testimonial_data['is_active']
-                }
-            )
-            self.stdout.write(f'Created testimonial by: {testimonial.name}')
 
         self.stdout.write(self.style.SUCCESS('Successfully created sample data'))
