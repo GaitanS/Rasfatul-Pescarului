@@ -164,3 +164,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 3000);
 });
+
+// Solunar data auto-update
+document.addEventListener('DOMContentLoaded', function() {
+    const solunarSection = document.querySelector('.solunar-section');
+    if (!solunarSection) return;
+
+    function updateSolunarData() {
+        fetch('/api/solunar-data/')
+            .then(response => response.json())
+            .then(data => {
+                data.predictions.forEach((prediction, index) => {
+                    const card = solunarSection.querySelectorAll('.solunar-card')[index];
+                    if (!card) return;
+
+                    // Update rating
+                    const ratingText = card.querySelector('.text-muted');
+                    if (ratingText) {
+                        ratingText.textContent = `Rating: ${parseFloat(prediction.rating).toFixed(2)}/5`;
+                    }
+
+                    // Update times
+                    const favorableTimes = card.querySelector('.fishing-times .text-success + div');
+                    if (favorableTimes) {
+                        const spans = favorableTimes.querySelectorAll('span');
+                        spans[0].textContent = prediction.major_start;
+                        spans[1].textContent = prediction.major_end;
+                    }
+
+                    const unfavorableTimes = card.querySelector('.fishing-times .text-danger + div');
+                    if (unfavorableTimes) {
+                        const spans = unfavorableTimes.querySelectorAll('span');
+                        spans[0].textContent = prediction.minor_start;
+                        spans[1].textContent = prediction.minor_end;
+                    }
+
+                    // Update fish icons
+                    const fishIcons = card.querySelectorAll('.fish-icons i');
+                    fishIcons.forEach((icon, i) => {
+                        if (i < Math.floor(prediction.rating)) {
+                            icon.classList.add('text-primary');
+                            icon.classList.remove('text-muted');
+                        } else {
+                            icon.classList.remove('text-primary');
+                            icon.classList.add('text-muted');
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error updating solunar data:', error));
+    }
+
+    // Update every minute
+    setInterval(updateSolunarData, 60000);
+});

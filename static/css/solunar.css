@@ -1,0 +1,382 @@
+/* Legend Styles */
+.legend-section {
+    background: #198653;
+    border-radius: 15px;
+    padding: 1.2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.legend-header h5 {
+    color: white;
+    font-weight: 600;
+}
+
+.legend-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 0.8rem;
+    margin-bottom: 1.2rem;
+}
+
+.legend-header .btn-link {
+    padding: 0.4rem 0.8rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    color: white !important;
+    text-decoration: none;
+}
+
+.legend-header .btn-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.legend-header .btn-link i {
+    transition: transform 0.3s ease;
+}
+
+.legend-header .btn-link.collapsed i {
+    transform: rotate(180deg);
+}
+
+.legend-content {
+    transition: all 0.3s ease;
+}
+
+.legend-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.legend-card .legend-title {
+    margin-bottom: 1.5rem;
+}
+
+.legend-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.legend-title {
+    color: #198653;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    padding: 0.8rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-item:hover {
+    background-color: rgba(25, 134, 83, 0.05);
+    transform: translateX(4px);
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-item .moon-icon {
+    flex-shrink: 0;
+}
+
+.legend-item span {
+    font-size: 0.9rem;
+    color: #333;
+    line-height: 1.5;
+}
+
+.legend-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.rating-example {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.rating-example i {
+    font-size: 1rem;
+    width: auto;
+}
+
+/* Solunar Page Styles */
+.solunar-page {
+    background-color: #198653;
+}
+
+/* Solunar Calendar Styles */
+.solunar-calendar {
+    min-height: 100vh;
+    padding: 2rem 0;
+    color: white;
+}
+
+.filter-controls {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.filter-controls select {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-controls select:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card.solunar-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    background: white !important;
+}
+
+.card.solunar-card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, 
+        transparent 0%,
+        transparent 50%,
+        #198754 100%);
+    pointer-events: none;
+}
+
+.card.solunar-card .card-body {
+    background: transparent !important;
+    padding: 1.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.solunar-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.moon-phase-icon {
+    transition: transform 0.3s ease;
+}
+
+.solunar-card:hover .moon-phase-icon {
+    transform: scale(1.1);
+}
+
+.card.solunar-card .card-title {
+    color: #198653 !important;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.card.solunar-card .fishing-times {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+}
+
+.fishing-times h6 {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.fishing-times .text-success {
+    color: #198653 !important;
+    font-weight: 600;
+}
+
+.fishing-times .text-danger {
+    color: #dc3545 !important;
+    font-weight: 600;
+}
+
+.fishing-times .d-flex {
+    background: white;
+    padding: 0.75rem;
+    font-weight: 500;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.fish-icons {
+    margin-top: 1rem;
+}
+
+.fish-icons i {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.fish-icons i.text-primary {
+    color: #198653 !important;
+}
+
+.solunar-card:hover .fish-icons i {
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+/* Moon phase label styles */
+.moon-phase-label {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    color: #198653;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2px 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Time arrows styles */
+.fishing-times .d-flex {
+    position: relative;
+}
+
+.fishing-times .d-flex::before {
+    content: "→";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #198653;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Time display styles */
+.fishing-times .d-flex span {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 4px 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.fishing-times .d-flex span:hover {
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Additional responsive styles */
+@media (max-width: 768px) {
+    .legend-section {
+        padding: 1rem;
+    }
+    
+    .legend-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .legend-item {
+        margin-bottom: 0.6rem;
+        padding: 0.4rem;
+    }
+    
+    .legend-title {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .legend-item span {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .solunar-calendar {
+        padding: 1rem 0;
+    }
+    
+    .filter-controls {
+        padding: 1rem;
+    }
+    
+    .filter-controls select {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .fish-icons i {
+        font-size: 1.25rem;
+    }
+}
+
+/* Override Bootstrap text-primary */
+.text-primary {
+    --bs-text-opacity: 1;
+    color: #198754 !important;
+}
+
+/* Loading Animation */
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.solunar-card {
+    animation: cardFadeIn 0.5s ease forwards;
+}
+
+.solunar-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.solunar-card:nth-child(3) {
+    animation-delay: 0.2s;
+}

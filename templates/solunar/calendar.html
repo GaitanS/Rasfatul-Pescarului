@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block body_class %}solunar-page{% endblock %}
+{% load static main_extras %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/solunar.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="solunar-calendar py-5">
+    <div class="container">
+        <h1 class="text-center mb-4" style="font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Calendar Solunar</h1>
+        
+        <!-- Legend Section -->
+        <div class="legend-section mb-5">
+            <div class="legend-header d-flex align-items-center justify-content-between mb-3">
+                <h5 class="mb-0">Legendă și Explicații</h5>
+                <button class="btn btn-link text-white" id="toggleLegend">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div class="legend-content">
+                <div class="row g-4">
+                    <!-- Moon Phases -->
+                    <div class="col-12 col-md-6">
+                        <div class="legend-card">
+                            <h6 class="legend-title"><i class="fas fa-moon me-2"></i>Fazele Lunii</h6>
+                            <div class="legend-item">
+                                <div class="moon-icon">
+                                    <svg width="30" height="30" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <span>Lună Nouă - Activitate crescută a peștilor</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="moon-icon">
+                                    <svg width="30" height="30" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 1 30 58A28 28 0 0 0 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                </div>
+                                <span>Primul Pătrar - Activitate moderată</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="moon-icon">
+                                    <svg width="30" height="30" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <span>Lună Plină - Activitate maximă</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="moon-icon">
+                                    <svg width="30" height="30" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 0 30 58A28 28 0 0 1 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                </div>
+                                <span>Ultimul Pătrar - Activitate moderată</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fishing Times -->
+                    <div class="col-12 col-md-6">
+                        <div class="legend-card">
+                            <h6 class="legend-title"><i class="fas fa-clock me-2"></i>Orare de Pescuit</h6>
+                            <div class="legend-item">
+                                <i class="fas fa-fish text-success"></i>
+                                <span>Perioada Favorabilă - Cele mai bune ore pentru pescuit</span>
+                            </div>
+                            <div class="legend-item">
+                                <i class="fas fa-ban text-danger"></i>
+                                <span>Perioada Nefavorabilă - Activitate redusă a peștilor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="filter-controls mb-5">
+            <form class="row justify-content-center g-3" method="get">
+                <div class="col-12 col-md-auto">
+                    <select name="month" class="form-select" id="monthSelect">
+                        {% for m_num, m_name in months %}
+                            <option value="{{ m_num }}" {% if m_num == current_month %}selected{% endif %}>
+                                {{ m_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <select name="year" class="form-select" id="yearSelect">
+                        {% for y in years_range %}
+                            <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>
+                                {{ y }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for prediction in calendar_data %}
+            <div class="col">
+                <div class="card h-100 solunar-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="moon-phase-icon me-3" style="position: relative;">
+                                {% if prediction.moon_phase < 0.125 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                    <div class="moon-phase-label">Lună Nouă</div>
+                                {% elif prediction.moon_phase < 0.375 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 1 30 58A28 28 0 0 0 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                    <div class="moon-phase-label">Primul Pătrar</div>
+                                {% elif prediction.moon_phase < 0.625 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                    <div class="moon-phase-label">Lună Plină</div>
+                                {% elif prediction.moon_phase < 0.875 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 0 30 58A28 28 0 0 1 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                    <div class="moon-phase-label">Ultimul Pătrar</div>
+                                {% else %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                    <div class="moon-phase-label">Lună Nouă</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">{{ prediction.date|romanian_date }}</h5>
+                                <div class="text-muted" style="font-size: 0.9rem;">
+                                    <i class="fas fa-star me-1" style="color: #198653;"></i>
+                                    Rating: {{ prediction.rating|floatformat:2 }}/5
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="fishing-times mb-3">
+                            <h6 class="text-success">
+                                <i class="fas fa-fish me-2"></i>Orar pescuit favorabil:
+                            </h6>
+                            <div class="d-flex justify-content-around align-items-center" style="position: relative;">
+                                <span>{{ prediction.major_start|time:"H:i" }}</span>
+                                <span style="visibility: hidden;">→</span>
+                                <span>{{ prediction.major_end|time:"H:i" }}</span>
+                            </div>
+                            
+                            <h6 class="text-danger mt-3">
+                                <i class="fas fa-ban me-2"></i>Orar pescuit nefavorabil:
+                            </h6>
+                            <div class="d-flex justify-content-around align-items-center" style="position: relative;">
+                                <span>{{ prediction.minor_start|time:"H:i" }}</span>
+                                <span style="visibility: hidden;">→</span>
+                                <span>{{ prediction.minor_end|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fishing-rating text-center">
+                            <div class="fish-icons">
+                                {% with ''|center:5 as range %}
+                                {% for _ in range %}
+                                    <i class="fas fa-fish {% if forloop.counter <= prediction.rating %}text-primary{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calendar update functionality
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    
+    function updateCalendar() {
+        const month = monthSelect.value;
+        const year = yearSelect.value;
+        window.location.href = `?month=${month}&year=${year}`;
+    }
+    
+    monthSelect.addEventListener('change', updateCalendar);
+    yearSelect.addEventListener('change', updateCalendar);
+
+    // Legend toggle functionality
+    const toggleBtn = document.getElementById('toggleLegend');
+    const legendContent = document.querySelector('.legend-content');
+    const legendIcon = toggleBtn.querySelector('i');
+    let isLegendVisible = true;
+
+    function toggleLegend() {
+        isLegendVisible = !isLegendVisible;
+        legendContent.style.display = isLegendVisible ? 'block' : 'none';
+        legendIcon.style.transform = isLegendVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        
+        // Save preference to localStorage
+        localStorage.setItem('solunarLegendVisible', isLegendVisible);
+    }
+
+    // Load saved preference
+    const savedPreference = localStorage.getItem('solunarLegendVisible');
+    if (savedPreference !== null) {
+        isLegendVisible = savedPreference === 'true';
+        legendContent.style.display = isLegendVisible ? 'block' : 'none';
+        legendIcon.style.transform = isLegendVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    toggleBtn.addEventListener('click', toggleLegend);
+});
+</script>
+{% endblock %}
+{% endblock %}

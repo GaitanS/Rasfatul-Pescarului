@@ -86,6 +86,87 @@
     </div>
 </section>
 
+<!-- Solunar Section -->
+<section class="solunar-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Calendar Solunar</h2>
+        <p class="text-center mb-5">Află cele mai bune perioade pentru pescuit bazate pe fazele lunii</p>
+        
+        <div class="row">
+            {% for prediction in solunar_predictions %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 solunar-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="moon-phase-icon me-3">
+                                {% if prediction.moon_phase < 0.125 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                {% elif prediction.moon_phase < 0.375 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 1 30 58A28 28 0 0 0 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                {% elif prediction.moon_phase < 0.625 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                {% elif prediction.moon_phase < 0.875 %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+                                        <path d="M30 2A28 28 0 0 0 30 58A28 28 0 0 1 30 2" fill="#1a1a1a"/>
+                                    </svg>
+                                {% else %}
+                                    <svg width="60" height="60" viewBox="0 0 60 60">
+                                        <circle cx="30" cy="30" r="28" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">
+                                    {% if forloop.first %}
+                                        Solunar azi
+                                    {% else %}
+                                        {{ prediction.date|date:"l, j F" }}
+                                    {% endif %}
+                                </h5>
+                                <div class="text-muted">Rating: {{ prediction.rating|floatformat:2 }}/5</div>
+                            </div>
+                        </div>
+                        
+                        <div class="fishing-times mb-3">
+                            <h6 class="text-success">Orar pescuit favorabil:</h6>
+                            <div class="d-flex justify-content-around">
+                                <span>{{ prediction.major_start|time:"H:i" }}</span>
+                                <span>{{ prediction.major_end|time:"H:i" }}</span>
+                            </div>
+                            
+                            <h6 class="text-danger mt-3">Orar pescuit nefavorabil:</h6>
+                            <div class="d-flex justify-content-around">
+                                <span>{{ prediction.minor_start|time:"H:i" }}</span>
+                                <span>{{ prediction.minor_end|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fishing-rating text-center">
+                            <div class="fish-icons">
+                                {% with ''|center:5 as range %}
+                                {% for _ in range %}
+                                    <i class="fas fa-fish {% if forloop.counter <= prediction.rating %}text-primary{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <small class="text-muted">Șanse de pescuit: {{ prediction.rating_text }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
 <!-- County Selection Section -->
 <section class="county-selection-section py-5">
     <div class="container">

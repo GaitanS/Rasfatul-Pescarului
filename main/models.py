@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime, timedelta
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
@@ -28,6 +29,49 @@ class Category(models.Model):
         for child in self.children.all():
             children.extend(child.get_all_children())
         return children
+
+class SolunarPrediction(models.Model):
+    date = models.DateField(unique=True)
+    moon_phase = models.FloatField(help_text="0-1 pentru faza lunii")
+    major_start = models.TimeField()
+    major_end = models.TimeField()
+    minor_start = models.TimeField()
+    minor_end = models.TimeField()
+    rating = models.FloatField(help_text="1-5 pentru calitatea pescuitului")
+    
+    class Meta:
+        ordering = ['date']
+        verbose_name = 'Predicție solunară'
+        verbose_name_plural = 'Predicții solunar'
+    
+    def __str__(self):
+        return f"Predicție solunară pentru {self.date}"
+    
+    @property
+    def rating_text(self):
+        if self.rating >= 4:
+            return "Excelent"
+        elif self.rating >= 3:
+            return "Bun"
+        elif self.rating >= 2:
+            return "Moderat"
+        else:
+            return "Slab"
+    
+    @property
+    def moon_icon(self):
+        # 0 = lună nouă, 0.5 = lună plină, 1 = lună nouă
+        if self.moon_phase < 0.125:
+            return "moon-new.png"
+        elif self.moon_phase < 0.375:
+            return "moon-waxing.png"
+        elif self.moon_phase < 0.625:
+            return "moon-full.png"
+        elif self.moon_phase < 0.875:
+            return "moon-waning.png"
+        else:
+            return "moon-new.png"
+
 
 class Brand(models.Model):
     name = models.CharField(max_length=100)

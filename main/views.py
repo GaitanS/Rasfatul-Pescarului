@@ -6,6 +6,10 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from astral import moon, LocationInfo
+from astral.sun import sun
+from datetime import timedelta
 from django.urls import reverse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -47,9 +51,93 @@ from .models import (
     Brand, ProductAttribute, ProductAttributeValue
 )
 
+def calculate_fishing_rating(moon_phase, date):
+    """Calculate fishing rating based on moon phase and other factors"""
+    # Base rating on moon phase (0-1)
+    # Best during new moon (0) and full moon (0.5)
+    base_rating = 5 - abs(moon_phase - 0.5) * 6
+    
+    # Adjust for time of year (better in spring/summer)
+    month = date.month
+    if 3 <= month <= 8:  # Spring and Summer
+        base_rating += 0.5
+    elif month in [9, 10]:  # Fall
+        base_rating += 0.25
+    
+    # Ensure rating is between 1 and 5 and round to 2 decimal places
+    return round(max(1, min(5, base_rating)), 2)
+
+def calculate_solunar_data(date):
+    """Calculate solunar data for a given date"""
+    # Set location to center of Romania
+    location = LocationInfo('Romania', 'Romania', 'Europe/Bucharest', 45.9432, 24.9668)
+    
+    # Calculate moon phase
+    moon_phase = moon.phase(date) / 28.0  # Normalize to 0-1
+    
+    # Get sun and moon data
+    s = sun(location.observer, date)
+    solar_noon = s['noon']
+    solar_midnight = datetime.datetime.combine(date, datetime.time(0, 0)) + timedelta(hours=12)
+    
+    try:
+        moonrise = moon.moonrise(location.observer, date)
+        moonset = moon.moonset(location.observer, date)
+        
+        # Use moonrise for major period if available
+        if moonrise:
+            moonrise_dt = datetime.datetime.combine(date, moonrise.time())
+            major_start = (moonrise_dt - timedelta(hours=1)).time()
+            major_end = (moonrise_dt + timedelta(hours=1)).time()
+        else:
+            # Fallback to solar noon
+            major_start = (solar_noon - timedelta(hours=1)).time()
+            major_end = (solar_noon + timedelta(hours=1)).time()
+        
+        # Use moonset for minor period if available
+        if moonset:
+            moonset_dt = datetime.datetime.combine(date, moonset.time())
+            minor_start = (moonset_dt - timedelta(hours=1)).time()
+            minor_end = (moonset_dt + timedelta(hours=1)).time()
+        else:
+            # Fallback to solar midnight
+            minor_start = (solar_midnight - timedelta(hours=1)).time()
+            minor_end = (solar_midnight + timedelta(hours=1)).time()
+    except Exception as e:
+        # Fallback to solar times if moon calculations fail
+        major_start = (solar_noon - timedelta(hours=1)).time()
+        major_end = (solar_noon + timedelta(hours=1)).time()
+        minor_start = (solar_midnight - timedelta(hours=1)).time()
+        minor_end = (solar_midnight + timedelta(hours=1)).time()
+    
+    # Calculate overall rating
+    rating = calculate_fishing_rating(moon_phase, date)
+    
+    return {
+        'date': date,
+        'moon_phase': moon_phase,
+        'major_start': major_start,
+        'major_end': major_end,
+        'minor_start': minor_start,
+        'minor_end': minor_end,
+        'rating': rating
+    }
+
 def home(request):
     """View pentru pagina principală"""
-    return render(request, 'index/index.html')
+    # Calculate solunar data for today and next 2 days
+    today = timezone.now().date()
+    solunar_predictions = []
+    
+    for i in range(3):
+        date = today + timedelta(days=i)
+        prediction = calculate_solunar_data(date)
+        solunar_predictions.append(prediction)
+    
+    context = {
+        'solunar_predictions': solunar_predictions
+    }
+    return render(request, 'index/index.html', context)
 
 def shop(request, category_slug=None):
     """View pentru pagina de magazin"""
@@ -1028,6 +1116,64 @@ def contact(request):
             )
     
     return render(request, 'pages/contact.html')
+
+@require_http_methods(['GET'])
+def solunar_data(request):
+    """API endpoint pentru date solunar"""
+    today = timezone.now().date()
+    predictions = []
+    
+    for i in range(3):
+        date = today + timedelta(days=i)
+        prediction = calculate_solunar_data(date)
+        # Convert datetime objects to string format for JSON serialization
+        predictions.append({
+            'date': date.strftime('%Y-%m-%d'),
+            'moon_phase': prediction['moon_phase'],
+            'major_start': prediction['major_start'].strftime('%H:%M'),
+            'major_end': prediction['major_end'].strftime('%H:%M'),
+            'minor_start': prediction['minor_start'].strftime('%H:%M'),
+            'minor_end': prediction['minor_end'].strftime('%H:%M'),
+            'rating': prediction['rating']
+        })
+    
+    return JsonResponse({'predictions': predictions})
+
+def solunar_calendar(request):
+    """View pentru calendarul solunar lunar"""
+    from dateutil.relativedelta import relativedelta
+    import calendar
+    
+    # Get year and month from query params or use current date
+    year = int(request.GET.get('year', timezone.now().year))
+    month = int(request.GET.get('month', timezone.now().month))
+    
+    # Get all days in the selected month
+    first_day = datetime.date(year, month, 1)
+    last_day = first_day + relativedelta(months=1, days=-1)
+    
+    # Calculate solunar data for each day
+    calendar_data = []
+    current_date = first_day
+    while current_date <= last_day:
+        prediction = calculate_solunar_data(current_date)
+        calendar_data.append(prediction)
+        current_date += timedelta(days=1)
+    
+    # Romanian month names
+    months = [
+        'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
+        'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'
+    ]
+    
+    context = {
+        'calendar_data': calendar_data,
+        'current_year': year,
+        'current_month': month,
+        'years_range': range(timezone.now().year - 2, timezone.now().year + 3),
+        'months': [(i+1, name) for i, name in enumerate(months)]
+    }
+    return render(request, 'solunar/calendar.html', context)
 
 def terms(request):
     """View pentru pagina de termeni și condiții"""
